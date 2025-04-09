@@ -18,7 +18,7 @@ export class MercadoLivreSystem {
         ["Clientes", "clients"],
         ["Produtos", "products"],
         ["Vendedores", "sellers"],
-        ["Exit", "exit"],
+        ["Sair", "exit"],
       ]);
       switch (option) {
         case "clients": {
@@ -32,7 +32,7 @@ export class MercadoLivreSystem {
           break;
         }
         case "sellers": {
-          const command = new SellersCommands(this.input);
+          const command = new SellersCommands(this.input, this.database);
           await command.run();
           break;
         }
