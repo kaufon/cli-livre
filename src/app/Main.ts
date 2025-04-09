@@ -1,17 +1,19 @@
 import { Collection, Db, MongoClient } from "mongodb";
-import type { IInput } from "../core/interfaces"
+import type { IInput } from "../core/interfaces";
 import { ProductsCommands } from "./commands/ProductsCommand";
 import { SellersCommands } from "./commands/SellersCommand";
 import { UsersCommands } from "./commands/UserCommand";
 import { Input } from "./libs/Input";
-import mongoDB from "../database/DatabaseConfiguration";
-import DatabaseConfiguration from "../database/DatabaseConfiguration";
+import { connectToDatabase } from "../database/DatabaseConfiguration";
 export class MercadoLivreSystem {
   private input: IInput;
-  private client: MongoClient 
   private database: Db;
   constructor() {
     this.input = new Input();
+  }
+  public async init(): Promise<void> {
+    const { client, db } = await connectToDatabase();
+    this.database = client.db("mercadolivre");
   }
   public async run(): Promise<void> {
     let isRunning = true;
@@ -24,7 +26,7 @@ export class MercadoLivreSystem {
       ]);
       switch (option) {
         case "clients": {
-          const command = new UsersCommands(this.input,this.database);
+          const command = new UsersCommands(this.input, this.database);
           await command.run();
           break;
         }

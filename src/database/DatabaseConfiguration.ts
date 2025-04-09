@@ -1,10 +1,31 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
 
-const uri = process.env.MONGO_URL ?? "";
+const uri = process.env.MONGO_URL;
+
+if (!uri) {
+  throw new Error("❌ MONGO_URL não foi definida no .env");
+}
 
 const client = new MongoClient(uri);
-const mongoDB = client.db("mercadolivre")
+let db: Db;
 
-export default mongoDB;
+export const connectToDatabase = async (): Promise<{ client: MongoClient; db: Db }> => {
+  if (!db) {
+    try {
+      console.log("🔌 Conectando ao MongoDB...");
+      await client.connect();
+      db = client.db("mercadolivre"); // ou use process.env.DB_NAME se quiser deixar dinâmico
+      console.log("✅ Conectado ao MongoDB com sucesso.");
+    } catch (error) {
+      console.error("❌ Erro ao conectar ao MongoDB:", error);
+      throw error;
+    }
+  }
+
+  return { client, db };
+};
+
+export { client };

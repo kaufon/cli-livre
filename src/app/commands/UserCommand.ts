@@ -1,13 +1,14 @@
-import { Collection, Db } from "mongodb";
+import type { Collection, Db } from "mongodb";
 import { CreateUserController } from "../../controllers/users/CreateUserController";
 import type { IInput } from "../../core/interfaces";
 import { UserModel } from "../../database/UserModel";
-import mongoDB from "../../database/DatabaseConfiguration";
 export class UsersCommands {
   private input: IInput;
+  private database: Db;
   private model: UserModel;
   constructor(input: IInput, db: Db) {
     this.input = input;
+    this.database = db;
     this.model = new UserModel(db.collection("users"));
   }
   public async run(): Promise<void> {

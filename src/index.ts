@@ -1,5 +1,10 @@
 import { MercadoLivreSystem } from "./app/Main";
 
-const App = new MercadoLivreSystem();
-
-App.run();
+export const App = async () => {
+  const app = new MercadoLivreSystem()
+  console.log("Inicando app..")
+  await app.init()
+  await app.run()
+  console.log("App correndo...")
+}
+App()

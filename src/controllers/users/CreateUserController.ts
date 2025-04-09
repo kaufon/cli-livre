@@ -8,7 +8,7 @@ export class CreateUserController {
   private input: IInput;
   constructor(userModel: UserModel, input: IInput) {
     this.userModel = userModel;
-    this.input = new Input();
+    this.input = input
   }
   async handle() {
     const name = await this.input.textInput("Escreva o nome: ");
@@ -31,5 +31,6 @@ export class CreateUserController {
       address.push({ city, street, zipCode, number });
     }
     await this.userModel.addUser(name, email, password, address, );
+    return
   }
 }

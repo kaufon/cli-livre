@@ -1,9 +1,11 @@
-import type { Collection } from "mongodb";
+import { Collection } from "mongodb";
+import mongoDB from "./DatabaseConfiguration";
+import client from "./DatabaseConfiguration";
 
 export class UserModel {
-  private connection: Collection;
-  constructor(connection: Collection) {
-    this.connection = connection;
+  private collection: Collection
+  constructor(collection: Collection) {
+    this.collection = collection
   }
   async addUser(
     name: string,
@@ -24,6 +26,8 @@ export class UserModel {
       favorites: [],
       purchases: []
     };
-    await this.connection.insertOne(user);
+    console.log(user)
+    const result = await this.collection.insertOne(user);
+    return result
   }
 }
