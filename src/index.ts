@@ -1,10 +1,10 @@
 import { MercadoLivreSystem } from "./app/Main";
+import { client, connectToDatabase } from "./database/DatabaseConfiguration";
 
-export const App = async () => {
-  const app = new MercadoLivreSystem()
-  console.log("Inicando app..")
-  await app.init()
-  await app.run()
-  console.log("App correndo...")
+async function run() {
+  const { db,client } = await connectToDatabase()
+  const app = new MercadoLivreSystem(db);
+  await app.run();
+  await client.close()
 }
-App()
+run();

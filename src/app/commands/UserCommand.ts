@@ -2,6 +2,12 @@ import type { Collection, Db } from "mongodb";
 import { CreateUserController } from "../../controllers/users/CreateUserController";
 import type { IInput } from "../../core/interfaces";
 import { UserModel } from "../../database/UserModel";
+import { ListAllUsersControler } from "../../controllers/users/ListUserController";
+import {
+  DeleteUserController,
+  SearchUserController,
+  UpdateUserController,
+} from "../../controllers/users";
 export class UsersCommands {
   private input: IInput;
   private database: Db;
@@ -26,6 +32,30 @@ export class UsersCommands {
     switch (options) {
       case "add": {
         const controller = await new CreateUserController(
+          this.model,
+          this.input,
+        );
+        await controller.handle();
+        return;
+      }
+      case "update": {
+        const controller = await new UpdateUserController(
+          this.model,
+          this.input,
+        );
+        await controller.handle()
+        return
+      }
+      case "search": {
+        const controller = await new SearchUserController(
+          this.model,
+          this.input,
+        );
+        await controller.handle();
+        return;
+      }
+      case "delete": {
+        const controller = await new DeleteUserController(
           this.model,
           this.input,
         );
