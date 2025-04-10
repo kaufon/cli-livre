@@ -15,10 +15,23 @@ export class SelectUserController {
     name: string;
     email: string;
     address: { city: string; street: string; zipCode: string; number: string };
-    favorites: {productId: ObjectId; productName: string; productDescription: string}[];
-    purchases: {productId: ObjectId; productName: string; price: number; quantity: string}[];
-  }> {
+    favorites: {
+      productId: ObjectId;
+      productName: string;
+      productDescription: string;
+    }[];
+    purchases: {
+      productId: ObjectId;
+      productName: string;
+      price: number;
+      quantity: string;
+    }[];
+  } | null> {
     const users = await this.userModel.listAllUsers();
+    if (users.length === 0) {
+      console.log("Nenhum usuário encontrado.");
+      return null;
+    }
     const list = new ListAllUsersControler(this.userModel);
     let selectedUser;
     await list.handle();

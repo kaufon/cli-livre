@@ -14,6 +14,7 @@ export class UpdateSellerController {
       this.sellerModel,
       this.input,
     ).handle();
+    if(!selectedSeller) return
     const sellerId = selectedSeller._id.toHexString();
     let isRunning = true;
     while (isRunning) {

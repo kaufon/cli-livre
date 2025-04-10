@@ -27,7 +27,7 @@ export class MercadoLivreSystem {
           break;
         }
         case "products": {
-          const command = new ProductsCommands(this.input);
+          const command = new ProductsCommands(this.input, this.database);
           await command.run();
           break;
         }

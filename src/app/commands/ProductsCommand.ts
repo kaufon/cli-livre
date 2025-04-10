@@ -3,6 +3,9 @@ import type { IInput } from "../../core/interfaces";
 import { SellerModel } from "../../database/SellerModel";
 import { ProductModel } from "../../database/ProductModel";
 import { CreateProductController } from "../../controllers/products/CreateProductController";
+import { DeleteProductController } from "../../controllers/products/DeleteProductController";
+import { UpdateProductController } from "../../controllers/products/UpdateProductController";
+import { SearchProductController } from "../../controllers/products/SearchProductController";
 export class ProductsCommands {
   private input: IInput;
   private database: Db;
@@ -30,7 +33,40 @@ export class ProductsCommands {
           this.productModel,
           this.sellerModel,
         );
-        await controller.handle()
+        await controller.handle();
+        return;
+      }
+      case "search": {
+        const controller = await new SearchProductController(
+          this.productModel,
+          this.input,
+        );
+        await controller.handle();
+        return;
+      }
+      case "delete": {
+        const controller = await new DeleteProductController(
+          this.input,
+          this.productModel,
+          this.sellerModel,
+        );
+        await controller.handle();
+        return;
+      }
+      case "update": {
+        const controller = await new UpdateProductController(
+          this.input,
+          this.productModel,
+          this.sellerModel,
+        );
+        await controller.handle();
+        return;
+      }
+      case "exit": {
+        return;
+      }
+      default: {
+        return;
       }
     }
   }

@@ -21,8 +21,13 @@ export class SelectSellerController {
       description: string;
       price: number;
     }[];
-  }> {
+  } | null> {
     const sellers = await this.sellerModel.listAllSellers();
+    if (sellers.length === 0) {
+      console.log("Nenhum vendedor encontrado.");
+      return null;
+    }
+
     const list = new ListAllSellersController(this.sellerModel);
     let selectedSeller;
     await list.handle();

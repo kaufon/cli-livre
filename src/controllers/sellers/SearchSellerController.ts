@@ -14,6 +14,7 @@ export class SearchSellerController {
       this.sellerModel,
       this.input,
     ).handle();
+    if (!selectedSeller) return
     const filteredSeller = {
       Nome: selectedSeller.name,
       Email: selectedSeller.email,

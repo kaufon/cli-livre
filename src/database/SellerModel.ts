@@ -1,5 +1,6 @@
 import { type Collection, ObjectId } from "mongodb";
 import { UpdateUserController } from "../controllers/users";
+import { ProductDocument } from "./ProductModel";
 
 type Address = {
   city: string;
@@ -13,6 +14,11 @@ type Product = {
   description: string;
   price: number;
 };
+type Sells = {
+  productId: ObjectId
+  quantiy: number
+  price: number
+}
 type SellerDocument = {
   _id?: ObjectId;
   name: string;
@@ -20,6 +26,7 @@ type SellerDocument = {
   password: string;
   address: Address;
   products: Product[];
+  sells: Sells[];
 };
 type UpdateSellerParams = {
   id: string;
@@ -42,6 +49,7 @@ export class SellerModel {
       password,
       address,
       products: [],
+      sells: [],
     };
     return await this.collection.insertOne(seller);
   }
@@ -52,7 +60,13 @@ export class SellerModel {
     const objectId = new ObjectId(id);
     return await this.collection.deleteOne({ _id: objectId });
   }
-  async updateSeller({id,name,email,password,address}:UpdateSellerParams){
+  async updateSeller({
+    id,
+    name,
+    email,
+    password,
+    address,
+  }: UpdateSellerParams) {
     const objectId = new ObjectId(id);
     const updateData: Partial<SellerDocument> = {};
     if (name) updateData.name = name;
@@ -63,6 +77,45 @@ export class SellerModel {
     return await this.collection.updateOne(
       { _id: objectId },
       { $set: updateData },
+    );
+  }
+  async addProduct(
+    { _id, name, price, description }: ProductDocument,
+    sellerId: ObjectId,
+  ) {
+    const objectId = new ObjectId(sellerId);
+    const product: Product = {
+      productId: new ObjectId(_id),
+      name,
+      description,
+      price,
+    };
+    return await this.collection.updateOne(
+      { _id: objectId },
+      { $push: { products: product } },
+    );
+  }
+  async removeProduct(productId: ObjectId, sellerId: ObjectId) {
+    const objectId = new ObjectId(sellerId);
+    return await this.collection.updateOne(
+      { _id: objectId },
+      { $pull: { products: { productId: new ObjectId(productId) } } },
+    );
+  }
+  async updateSellerProduct(
+    sellerId: ObjectId,
+    productId: ObjectId,
+    updates: Partial<Omit<Product, "productId">>,
+  ) {
+    const updateFields: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(updates)) {
+      updateFields[`products.$.${key}`] = value;
+    }
+
+    return await this.collection.updateOne(
+      { _id: sellerId, "products.productId": productId },
+      { $set: updateFields },
     );
   }
 }

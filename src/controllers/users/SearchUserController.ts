@@ -14,6 +14,7 @@ export class SearchUserController {
       this.userModel,
       this.input,
     ).handle();
+    if (!selectedUser) return;
     const filteredUser = {
       Nome: selectedUser.name,
       Email: selectedUser.email,
