@@ -15,10 +15,12 @@ type Product = {
   price: number;
 };
 type Sells = {
-  productId: ObjectId
-  quantiy: number
-  price: number
-}
+  _id: ObjectId;
+  productId: ObjectId;
+  productName: string;
+  quantity: number;
+  price: number;
+};
 type SellerDocument = {
   _id?: ObjectId;
   name: string;
@@ -117,5 +119,24 @@ export class SellerModel {
       { _id: sellerId, "products.productId": productId },
       { $set: updateFields },
     );
+  }
+  async addSell(sellerId: ObjectId, sell: Sells) {
+    return await this.collection.updateOne(
+      { _id: sellerId },
+      { $push: { sells: sell } },
+    );
+  }
+  async removeSell(sellerId: ObjectId, sellId: ObjectId) {
+    return await this.collection.updateOne(
+      { _id: sellerId },
+      { $pull: { sells: { _id: sellId } } },
+    );
+  }
+  async findSellerIdByProductId(productId: ObjectId): Promise<ObjectId | null> {
+    const seller = await this.collection.findOne(
+      { "products.productId": productId },
+      { projection: { _id: 1 } },
+    );
+    return seller?._id ?? null
   }
 }

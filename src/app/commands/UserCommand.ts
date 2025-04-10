@@ -11,16 +11,21 @@ import {
 import { ProductModel } from "../../database/ProductModel";
 import { AddFavoriteController } from "../../controllers/users/AddFavoriteController";
 import { RemoveFavoriteController } from "../../controllers/users/RemoveFavoriteController";
+import { AddPurchaseController } from "../../controllers/users/AddPurchaseController";
+import { SellerModel } from "../../database/SellerModel";
+import { RemovePurchaseController } from "../../controllers/users/RemovePurchaseController";
 export class UsersCommands {
   private input: IInput;
   private database: Db;
   private userModel: UserModel;
   private productModel: ProductModel;
+  private sellerModel: SellerModel;
   constructor(input: IInput, db: Db) {
     this.input = input;
     this.database = db;
     this.userModel = new UserModel(db.collection("users"));
     this.productModel = new ProductModel(db.collection("products"));
+    this.sellerModel = new SellerModel(db.collection("sellers"));
   }
   public async run(): Promise<void> {
     const options = await this.input.selectInput("Pls escolha", [
@@ -35,6 +40,26 @@ export class UsersCommands {
       ["Voltar", "exit"],
     ]);
     switch (options) {
+      case "buy-product": {
+        const controller = await new AddPurchaseController(
+          this.input,
+          this.userModel,
+          this.sellerModel,
+          this.productModel,
+        );
+        await controller.handle();
+        return;
+      }
+      case "cancel-purchase": {
+        const controller = await new RemovePurchaseController(
+          this.input,
+          this.userModel,
+          this.sellerModel,
+          this.productModel,
+        );
+        await controller.handle();
+        return;
+      }
       case "add-favorite": {
         const controller = await new AddFavoriteController(
           this.userModel,

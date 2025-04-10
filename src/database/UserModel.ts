@@ -15,10 +15,12 @@ type FavoriteProduct = {
 };
 
 type Purchases = {
+  _id: ObjectId
   productId: ObjectId;
   productName: string;
-  price: number;
-  quantity: string;
+  productPrice: number;
+  quantity: number;
+  totalPrice: number
 };
 
 type UserDocument = {
@@ -84,36 +86,36 @@ export class UserModel {
   }
 
   async addFavorite(id: ObjectId, product: FavoriteProduct) {
-    const objectId = new ObjectId(id);
     return await this.collection.updateOne(
-      { _id: objectId },
+      { _id: id },
       { $push: { favorites: product } }
     );
   }
 
   async removeFavorite(userId: ObjectId, favoriteId: ObjectId) {
-    const userObjectId = new ObjectId(userId);
-    const favoriteObjectId = new ObjectId(favoriteId);
     return await this.collection.updateOne(
-      { _id: userObjectId },
-      { $pull: { favorites: { productId: favoriteObjectId } } }
+      { _id: userId },
+      { $pull: { favorites: { productId: ObjectId } } }
     );
   }
 
-  async addPurchase(userId: string, purchase: Purchases) {
-    const userObjectId = new ObjectId(userId);
+  async addPurchase(userId: ObjectId, purchase: Purchases) {
     return await this.collection.updateOne(
-      { _id: userObjectId },
+      { _id: userId },
       { $push: { purchases: purchase } }
     );
   }
-
-  async cancelPurchase(userId: string, purchaseId: string) {
-    const userObjectId = new ObjectId(userId);
-    const purchaseIdObjectId = new ObjectId(purchaseId);
+  async listPurchases(userId: ObjectId){
+    const user = await this.collection.findOne({ _id: userId });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user.purchases;
+  }
+  async cancelPurchase(userId: ObjectId, purchaseId: ObjectId) {
     return await this.collection.updateOne(
-      { _id: userObjectId },
-      { $pull: { purchases: { productId: purchaseIdObjectId } } }
+      { _id: userId },
+      { $pull: { purchases: { _id: purchaseId } } }
     );
   }
 }
