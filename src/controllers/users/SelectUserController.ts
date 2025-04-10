@@ -19,7 +19,7 @@ export class SelectUserController {
       productId: ObjectId;
       productName: string;
       productDescription: string;
-      productPrice: number
+      productPrice: number;
     }[];
     purchases: {
       productId: ObjectId;
@@ -44,9 +44,8 @@ export class SelectUserController {
       if (selectedUser) {
         console.log(`Usuário selecionado: ${selectedUser.name}`);
         break;
-      } else {
-        console.log("Usuário não encontrado. Tente novamente.");
       }
+      console.log("Usuário não encontrado. Tente novamente.");
     }
     return selectedUser;
   }

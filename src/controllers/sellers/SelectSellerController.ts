@@ -41,9 +41,8 @@ export class SelectSellerController {
       if (selectedSeller) {
         console.log(`Vendedor selecionado: ${selectedSeller.name}`);
         break;
-      } else {
-        console.log("Vendedor não encontrado. Tente novamente.");
       }
+      console.log("Vendedor não encontrado. Tente novamente.");
     }
     return selectedSeller;
   }

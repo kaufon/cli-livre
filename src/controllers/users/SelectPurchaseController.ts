@@ -46,9 +46,8 @@ export class SelectPurchaseController {
       if (selectedPurchase) {
         console.log(`Compra selecionada: ${selectedPurchase._id.toString()}`);
         break;
-      } else {
-        console.log("Compra não encontrada. Tente novamente.");
       }
+      console.log("Compra não encontrada. Tente novamente.");
     }
     return selectedPurchase;
   }

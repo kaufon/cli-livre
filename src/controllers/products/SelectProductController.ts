@@ -1,6 +1,9 @@
 import { ObjectId, ServerDescriptionChangedEvent } from "mongodb";
 import type { IInput } from "../../core/interfaces";
-import type { ProductDocument, ProductModel } from "../../database/ProductModel";
+import type {
+  ProductDocument,
+  ProductModel,
+} from "../../database/ProductModel";
 import { ListAllProductsController } from "./ListAllProductsController";
 
 export class SelectProductController {
@@ -29,9 +32,8 @@ export class SelectProductController {
       if (selectedProduct) {
         console.log(`Produto selecionado: ${selectedProduct.name}`);
         break;
-      } else {
-        console.log("Produto não encontrado. Tente novamente.");
       }
+      console.log("Produto não encontrado. Tente novamente.");
     }
     return selectedProduct;
   }

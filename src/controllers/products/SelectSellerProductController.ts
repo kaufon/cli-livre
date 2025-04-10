@@ -1,6 +1,9 @@
 import type { ObjectId } from "mongodb";
 import type { IInput } from "../../core/interfaces";
-import type { ProductDocument, ProductModel } from "../../database/ProductModel";
+import type {
+  ProductDocument,
+  ProductModel,
+} from "../../database/ProductModel";
 import { ListProductsController } from "./ListProductsController";
 
 export class SelectSellerProductController {
@@ -15,7 +18,7 @@ export class SelectSellerProductController {
       productId: ObjectId;
       name: string;
       description: string;
-      price?: number;
+      price: number;
     }>,
   ): Promise<{
     productId: ObjectId;
@@ -49,9 +52,8 @@ export class SelectSellerProductController {
       if (selectedProduct) {
         console.log(`Produto selecionado: ${selectedProduct.name}`);
         break;
-      } else {
-        console.log("Produto não encontrado. Tente novamente.");
       }
+      console.log("Produto não encontrado. Tente novamente.");
     }
     return selectedProduct;
   }
