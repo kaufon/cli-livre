@@ -15,7 +15,7 @@ export class SelectSellerProductController {
       productId: ObjectId;
       name: string;
       description: string;
-      price: number;
+      price?: number;
     }>,
   ): Promise<{
     productId: ObjectId;

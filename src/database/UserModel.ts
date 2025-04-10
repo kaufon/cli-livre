@@ -11,6 +11,7 @@ type FavoriteProduct = {
   productId: ObjectId;
   productName: string;
   productDescription: string;
+  productPrice: number;
 };
 
 type Purchases = {
@@ -82,7 +83,7 @@ export class UserModel {
     );
   }
 
-  async addFavorite(id: string, product: FavoriteProduct) {
+  async addFavorite(id: ObjectId, product: FavoriteProduct) {
     const objectId = new ObjectId(id);
     return await this.collection.updateOne(
       { _id: objectId },
@@ -90,7 +91,7 @@ export class UserModel {
     );
   }
 
-  async removeFavorite(userId: string, favoriteId: string) {
+  async removeFavorite(userId: ObjectId, favoriteId: ObjectId) {
     const userObjectId = new ObjectId(userId);
     const favoriteObjectId = new ObjectId(favoriteId);
     return await this.collection.updateOne(

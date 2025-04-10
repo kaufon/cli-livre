@@ -19,6 +19,7 @@ export class SelectUserController {
       productId: ObjectId;
       productName: string;
       productDescription: string;
+      productPrice: number
     }[];
     purchases: {
       productId: ObjectId;

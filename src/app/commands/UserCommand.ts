@@ -8,14 +8,19 @@ import {
   SearchUserController,
   UpdateUserController,
 } from "../../controllers/users";
+import { ProductModel } from "../../database/ProductModel";
+import { AddFavoriteController } from "../../controllers/users/AddFavoriteController";
+import { RemoveFavoriteController } from "../../controllers/users/RemoveFavoriteController";
 export class UsersCommands {
   private input: IInput;
   private database: Db;
-  private model: UserModel;
+  private userModel: UserModel;
+  private productModel: ProductModel;
   constructor(input: IInput, db: Db) {
     this.input = input;
     this.database = db;
-    this.model = new UserModel(db.collection("users"));
+    this.userModel = new UserModel(db.collection("users"));
+    this.productModel = new ProductModel(db.collection("products"));
   }
   public async run(): Promise<void> {
     const options = await this.input.selectInput("Pls escolha", [
@@ -30,9 +35,27 @@ export class UsersCommands {
       ["Voltar", "exit"],
     ]);
     switch (options) {
+      case "add-favorite": {
+        const controller = await new AddFavoriteController(
+          this.userModel,
+          this.input,
+          this.productModel,
+        );
+        await controller.handle();
+        return;
+      }
+      case "remove-favorite": {
+        const controller = await new RemoveFavoriteController(
+          this.userModel,
+          this.input,
+          this.productModel,
+        );
+        await controller.handle();
+        return;
+      }
       case "add": {
         const controller = await new CreateUserController(
-          this.model,
+          this.userModel,
           this.input,
         );
         await controller.handle();
@@ -40,15 +63,15 @@ export class UsersCommands {
       }
       case "update": {
         const controller = await new UpdateUserController(
-          this.model,
+          this.userModel,
           this.input,
         );
-        await controller.handle()
-        return
+        await controller.handle();
+        return;
       }
       case "search": {
         const controller = await new SearchUserController(
-          this.model,
+          this.userModel,
           this.input,
         );
         await controller.handle();
@@ -56,7 +79,7 @@ export class UsersCommands {
       }
       case "delete": {
         const controller = await new DeleteUserController(
-          this.model,
+          this.userModel,
           this.input,
         );
         await controller.handle();

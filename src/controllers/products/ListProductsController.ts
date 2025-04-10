@@ -1,5 +1,5 @@
 import type { ObjectId } from "mongodb";
-import { ProductDocument, ProductModel } from "../../database/ProductModel";
+import type { ProductDocument, ProductModel } from "../../database/ProductModel";
 
 export class ListProductsController {
   private productModel: ProductModel;
