@@ -3,11 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const uri = process.env.MONGO_URL;
-
-if (!uri) {
-  throw new Error("❌ MONGO_URL não foi definida no .env");
-}
+const uri = "mongodb://root:example@localhost:27017"
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -26,7 +22,7 @@ export const connectToDatabase = async (): Promise<{
     try {
       console.log("🔌 Conectando ao MongoDB...");
       await client.connect();
-      db = client.db("MercadoLivre"); // ou use process.env.DB_NAME se quiser deixar dinâmico
+      db = client.db("MercadoLivre"); 
       console.log("✅ Conectado ao MongoDB com sucesso.");
     } catch (error) {
       console.error("❌ Erro ao conectar ao MongoDB:", error);
