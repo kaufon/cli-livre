@@ -24,7 +24,7 @@ export class SelectUserController {
     purchases: {
       productId: ObjectId;
       productName: string;
-      price: number;
+      totalPrice: number;
       quantity: string;
     }[];
   } | null> {

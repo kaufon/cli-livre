@@ -12,6 +12,18 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
       - mongodb-data:/data/db
+  redisdb:
+      image: redis:7.0
+      container_name: redisdb
+      restart: unless-stopped
+      ports:
+        - "6379:6379"
+      environment:
+        REDIS_HOST_USERNAME: root
+        REDIS_HOST_PASSWORD: example
+      volumes:
+        - redis-data:/data
 
 volumes:
   mongodb-data:
+  redis-data:
