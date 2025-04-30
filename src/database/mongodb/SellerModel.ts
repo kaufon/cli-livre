@@ -1,6 +1,5 @@
 import { type Collection, ObjectId } from "mongodb";
-import { UpdateUserController } from "../controllers/users";
-import { ProductDocument } from "./ProductModel";
+import type { ProductDocument } from "./ProductModel";
 
 type Address = {
   city: string;

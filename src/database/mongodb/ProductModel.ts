@@ -1,4 +1,5 @@
-import { Collection, ObjectId } from "mongodb";
+import {  ObjectId } from "mongodb";
+import type { Collection } from "mongodb";
 
 type Address = {
   city: string;
