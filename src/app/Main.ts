@@ -4,7 +4,7 @@ import { ProductsCommands } from "./commands/ProductsCommand";
 import { SellersCommands } from "./commands/SellersCommand";
 import { UsersCommands } from "./commands/UserCommand";
 import { Input } from "./libs/Input";
-import Redis from "ioredis";
+import type { Redis } from "ioredis";
 export class MercadoLivreSystem {
 	private input: IInput;
 	private mongoDatabase: Db;

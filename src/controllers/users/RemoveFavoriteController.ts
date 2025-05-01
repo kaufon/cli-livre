@@ -3,21 +3,12 @@ import type { IInput } from "../../core/interfaces";
 import type { ProductModel, UserModel } from "../../database";
 import { SelectSellerProductController } from "../products/SelectSellerProductController";
 import { SelectUserController } from "./SelectUserController";
+import { CacheController } from "./FavoriteController";
+import Redis from "ioredis";
 
-export class RemoveFavoriteController {
-  private userModel: UserModel;
-  private input: IInput;
-  private productModel: ProductModel;
-  constructor(userModel: UserModel, input: IInput, productModel: ProductModel) {
-    this.userModel = userModel;
-    this.input = input;
-    this.productModel = productModel;
-  }
+export class RemoveFavoriteController extends CacheController {
   async handle(): Promise<void> {
-    const selectedUser = await new SelectUserController(
-      this.userModel,
-      this.input,
-    ).handle();
+    const selectedUser = await this.getUser()
     if (!selectedUser) return;
     const products = selectedUser.favorites.map((fav) => ({
       productId: fav.productId,

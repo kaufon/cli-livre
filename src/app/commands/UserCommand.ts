@@ -6,7 +6,6 @@ import {
 	SearchUserController,
 	UpdateUserController,
 } from "../../controllers/users";
-import { RemoveFavoriteController } from "../../controllers/users/RemoveFavoriteController";
 import { AddPurchaseController } from "../../controllers/users/AddPurchaseController";
 import { RemovePurchaseController } from "../../controllers/users/RemovePurchaseController";
 import { ProductModel, SellerModel, UserModel } from "../../database";
