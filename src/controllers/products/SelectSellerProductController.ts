@@ -25,7 +25,7 @@ export class SelectSellerProductController {
     name: string;
     description: string;
     price: number;
-    seller: {
+    seller?: {
       name: string;
       address: {
         city: string;
@@ -39,22 +39,21 @@ export class SelectSellerProductController {
       console.log("Nenhum produto encontrado.");
       return null;
     }
-    const list = new ListProductsController(this.productModel);
-    let selectedProduct;
-    await list.handle(products);
-    while (true) {
-      const selectedProductId = await this.input.textInput(
-        "Digite o id do produto: ",
-      );
-      selectedProduct = products.find(
-        (product) => product.productId?.toHexString() === selectedProductId,
-      );
-      if (selectedProduct) {
-        console.log(`Produto selecionado: ${selectedProduct.name}`);
-        break;
+      const list = new ListProductsController(this.productModel);
+      let selectedProduct;
+      await list.handle(products);
+      while (true) {
+        const selectedIndex = Number.parseInt(
+          await this.input.textInput("Digite o índice do produto: "),
+          10,
+        );
+        if (!Number.isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < products.length) {
+          selectedProduct = products[selectedIndex];
+          console.log(`Produto selecionado: ${selectedProduct.name}`);
+          break;
+        }
+        console.log("Índice inválido. Tente novamente.");
       }
-      console.log("Produto não encontrado. Tente novamente.");
-    }
     return selectedProduct;
   }
 }

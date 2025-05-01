@@ -19,10 +19,9 @@ export abstract class Command {
 				"session:user",
 				JSON.stringify({ email, password }),
 			);
-			await this.redis.expire("session:user", 60);
+			await this.redis.expire("session:user", 60 * 60);
 			return false;
 		}
-		console.log("✅ Você está logado.");
 		return true;
 	}
 	abstract run(): Promise<void>;

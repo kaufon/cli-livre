@@ -1,10 +1,8 @@
 import { ObjectId } from "mongodb";
 import type { IInput } from "../../core/interfaces";
-import type { ProductModel } from "../../database/ProductModel";
-import type { SellerModel } from "../../database/SellerModel";
-import type { UserModel } from "../../database/UserModel";
 import { SelectProductController } from "../products/SelectProductController";
 import { SelectUserController } from "./SelectUserController";
+import type { ProductModel, SellerModel, UserModel } from "../../database";
 
 export class AddPurchaseController {
   private input: IInput;

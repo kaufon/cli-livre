@@ -1,10 +1,10 @@
 import { ObjectId, ServerDescriptionChangedEvent } from "mongodb";
 import type { IInput } from "../../core/interfaces";
 import type {
-  ProductDocument,
   ProductModel,
-} from "../../database/ProductModel";
+} from "../../database";
 import { ListAllProductsController } from "./ListAllProductsController";
+import { ProductDocument } from "../../database/mongodb/ProductModel";
 
 export class SelectProductController {
   private productModel: ProductModel;
@@ -21,20 +21,20 @@ export class SelectProductController {
     }
     const list = new ListAllProductsController(this.productModel);
     await list.handle();
-    let selectedProduct;
+    let selectedProduct: ProductDocument | null = null;
     while (true) {
-      const selectedProductId = await this.input.textInput(
-        "Digite o id do produto",
+      const selectedIndex = await this.input.textInput(
+        "Digite o índice do produto (começando de 0):"
       );
-      selectedProduct = products.find(
-        (product) => product._id?.toHexString() === selectedProductId,
-      );
-      if (selectedProduct) {
+      const index = Number.parseInt(selectedIndex, 10);
+      if (!Number.isNaN(index) && index >= 0 && index < products.length) {
+        selectedProduct = products[index];
         console.log(`Produto selecionado: ${selectedProduct.name}`);
         break;
       }
-      console.log("Produto não encontrado. Tente novamente.");
+      console.log("Índice inválido. Tente novamente.");
     }
     return selectedProduct;
   }
 }
+

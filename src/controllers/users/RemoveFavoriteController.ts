@@ -1,9 +1,8 @@
 import type { ObjectId } from "mongodb";
 import type { IInput } from "../../core/interfaces";
-import type { ProductModel } from "../../database/ProductModel";
-import type { UserModel } from "../../database/UserModel";
-import { SelectUserController } from "./SelectUserController";
+import type { ProductModel, UserModel } from "../../database";
 import { SelectSellerProductController } from "../products/SelectSellerProductController";
+import { SelectUserController } from "./SelectUserController";
 
 export class RemoveFavoriteController {
   private userModel: UserModel;
