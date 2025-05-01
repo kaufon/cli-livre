@@ -1,37 +1,12 @@
 import type { ObjectId } from "mongodb";
-import type { IInput } from "../../core/interfaces";
-import type { ProductModel } from "../../database";
-import type { UserModel } from "../../database";
-import { SelectProductController } from "../products/SelectProductController";
-import { SelectUserController } from "./SelectUserController";
-import type Redis from "ioredis";
+import { CacheController } from "./FavoriteController";
 
-export class AddFavoriteController {
-	private userModel: UserModel;
-	private input: IInput;
-	private productModel: ProductModel;
-	private redis: Redis;
-	constructor(
-		userModel: UserModel,
-		input: IInput,
-		productModel: ProductModel,
-		redis: Redis,
-	) {
-		this.userModel = userModel;
-		this.input = input;
-		this.redis = redis;
-		this.productModel = productModel;
-	}
+export class AddFavoriteController extends CacheController {
 	async handle(): Promise<void> {
-		const selectedUser = await new SelectUserController(
-			this.userModel,
-			this.input,
-		).handle();
+		const selectedUser = await this.getUser();
+		const selectedProduct = await this.getProduct();
 		if (!selectedUser) return;
-		const selectedProduct = await new SelectProductController(
-			this.productModel,
-			this.input,
-		).handle();
+		await this.setUserInitialFavoriteCache(selectedUser.email);
 		if (!selectedProduct) return;
 		const favoriteProduct = {
 			productId: selectedProduct._id as ObjectId,
@@ -39,10 +14,12 @@ export class AddFavoriteController {
 			productDescription: selectedProduct.description,
 			productPrice: selectedProduct.price,
 		};
-		const userFavoritesKey = `favorites:user:${selectedUser.email}`;
-		const userFavorites = await this.redis.get(userFavoritesKey);
-		const userFavoritesArray = userFavorites ? JSON.parse(userFavorites) : [];
-		userFavoritesArray.push(favoriteProduct);
-		await this.redis.set(userFavoritesKey, JSON.stringify(userFavoritesArray));
+		const userCacheData = await this.getUserFavoriteCache(selectedUser.email);
+    if (userCacheData.some((item) => item.productId === favoriteProduct.productId)) {
+      console.log("Produto já está nos favoritos.");
+      return;
+    }
+		userCacheData.push(favoriteProduct);
+    await this.redis.set(`favorites:user:${selectedUser.email}`, JSON.stringify(userCacheData));
 	}
 }
