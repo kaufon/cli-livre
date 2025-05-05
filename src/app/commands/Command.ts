@@ -10,13 +10,13 @@ export abstract class Command {
 		this.redis = redis;
 	}
 	protected async validateSession(): Promise<boolean> {
-		const userSession = await this.redis.get("session:user");
+		const userSession = await this.redis.keys("session:user*");
 		if (!userSession) {
 			console.log("❌ Você não está logado.");
 			const email = await this.input.textInput("Digite seu email");
 			const password = await this.input.textInput("Digite sua senha");
 			const user = await this.redis.set(
-				"session:user",
+				`session:user:${email}`,
 				JSON.stringify({ email, password }),
 			);
 			await this.redis.expire("session:user", 60 * 60);

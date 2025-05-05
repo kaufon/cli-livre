@@ -6,19 +6,22 @@ import {
 	SearchUserController,
 	UpdateUserController,
 } from "../../controllers/users";
-import { UserModel } from "../../database";
+import { ProductModel, UserModel } from "../../database";
 import { Command } from "./Command";
 import type Redis from "ioredis";
 import { FavoritesCommand } from "./FavoritesCommand";
 import { PurchasesCommand } from "./PurchasesCommand";
+import { GetCurrentUserController } from "../../controllers/users/GetCurrentUserController";
 export class UsersCommands extends Command {
 	private userModel: UserModel;
+	private productModel: ProductModel;
 	private db: Db;
 	constructor(input: IInput, db: Db, redis: Redis) {
 		super(input, redis);
 		this.input = input;
 		this.db = db;
 		this.userModel = new UserModel(db.collection("users"));
+		this.productModel = new ProductModel(db.collection("products"));
 	}
 	public async run(): Promise<void> {
 		const isLoggedIn = await this.validateSession();
@@ -32,9 +35,20 @@ export class UsersCommands extends Command {
 			["Buscar Clientes", "search"],
 			["Favoritos", "favorites"],
 			["Compras", "purchases"],
+			["Ver usuario atual", "get-current-user"],
 			["Voltar", "exit"],
 		]);
 		switch (options) {
+			case "get-current-user": {
+				const controller = new GetCurrentUserController(
+					this.userModel,
+					this.input,
+					this.productModel,
+					this.redis,
+				);
+				await controller.handle();
+        return
+			}
 			case "purchases": {
 				const command = new PurchasesCommand(this.db, this.input, this.redis);
 				await command.run();

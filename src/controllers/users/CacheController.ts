@@ -5,7 +5,7 @@ import { SelectUserController } from "./SelectUserController";
 import { SelectProductController } from "../products/SelectProductController";
 import { SelectSellerProductController } from "../products";
 import { SelectPurchaseController } from "./SelectPurchaseController";
-import { PurchaseDto } from "../../core/dtos/PurchaseDto";
+import type { PurchaseDto } from "../../core/dtos/PurchaseDto";
 
 export abstract class CacheController {
 	protected userModel: UserModel;

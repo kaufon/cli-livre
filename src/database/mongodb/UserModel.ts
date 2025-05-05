@@ -139,4 +139,7 @@ export class UserModel {
 			{ $set: { favorites: favorites } },
 		);
 	}
+	async getUserFromEmail(email: string): Promise<UserDocument | null> {
+		return await this.collection.findOne({ email: email });
+	}
 }
