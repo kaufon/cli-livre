@@ -24,6 +24,7 @@ export class FavoritesCommand extends Command {
 			const option = await this.input.selectInput("Pls escolha", [
 				["Adicionar Favorito", "add-favorite"],
 				["Remover Favorito", "remove-favorite"],
+        ["Sincronizar favoritos", "synchronize"],
 				["Voltar", "exit"],
 			]);
 			switch (option) {
@@ -47,7 +48,7 @@ export class FavoritesCommand extends Command {
 					await controller.handle();
 					break;
 				}
-				case "exit": {
+				case "synchronize": {
 					const controller = new SynchronizeFavoritesCacheController(
 						this.redis,
 						this.userModel,
@@ -55,6 +56,9 @@ export class FavoritesCommand extends Command {
 					await controller.handle();
 					return;
 				}
+        case "exit":{
+          return
+        }
 				default:
 					console.log("Opção inválida");
 					break;

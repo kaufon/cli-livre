@@ -8,14 +8,16 @@ export class SynchronizeFavoritesCacheController {
     this.userModel = userModel
     this.redis = redis
   }
-  public async handle():Promise<void>{
-    const allFavoritesKeys = await this.redis.keys("favorites*")
-    allFavoritesKeys.forEach(async (key) => {
-      const userFavoriteProductsCache = await this.redis.get(key)
-      const userFavoriteProducts = JSON.parse(userFavoriteProductsCache as string)
-      const userEmail = key.slice(14)
-      this.userModel.setFavorites(userEmail,userFavoriteProducts)
-      this.redis.del(key)
-    })
+
+  public async handle(): Promise<void> {
+    const allFavoritesKeys = await this.redis.keys("favorites*");
+    for (const key of allFavoritesKeys) {
+      const userFavoriteProductsCache = await this.redis.get(key);
+      const userFavoriteProducts = JSON.parse(userFavoriteProductsCache as string);
+      const userEmail = key.slice(15);
+      this.userModel.setFavorites(userEmail, userFavoriteProducts);
+      this.redis.del(key);
+    }
   }
+      
 }
