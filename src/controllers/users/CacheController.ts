@@ -3,6 +3,7 @@ import type { IInput } from "../../core/interfaces";
 import type { ProductModel, UserModel } from "../../database";
 import { SelectUserController } from "./SelectUserController";
 import { SelectProductController } from "../products/SelectProductController";
+import { SelectSellerProductController } from "../products";
 
 export abstract class CacheController {
 	protected userModel: UserModel;
@@ -34,19 +35,27 @@ export abstract class CacheController {
 		).handle();
 		return selectedProduct;
 	}
-	async getUserFavoriteCache(userEmail: string): Promise<any[]>  {
+	async getProductsFromUser(products: any[]) {
+		const selectedProduct = await new SelectSellerProductController(
+			this.productModel,
+			this.input,
+		).handle(products);
+		return selectedProduct;
+	}
+	async getUserFavoriteCache(userEmail: string): Promise<any[]> {
 		const cache = await this.redis.get(`favorites:user:${userEmail}`);
-    const data = cache ? JSON.parse(cache) : [];
-    return data
+		const data = cache ? JSON.parse(cache) : [];
+		return data;
 	}
 	async setUserInitialFavoriteCache(userEmail: string): Promise<void> {
 		const userFavoritesKey = `favorites:user:${userEmail}`;
+		const cachedFavorites = await this.getUserFavoriteCache(userEmail);
 		const userFavorites =
 			await this.userModel.getFavoritesFromUserEmail(userEmail);
-		const userFavoritesArray = userFavorites
-			? JSON.stringify(userFavorites)
-			: [];
-		await this.redis.set(userFavoritesKey, userFavoritesArray as string);
+		const mergedFavorites = Array.from(
+			new Set([...(cachedFavorites || []), ...(userFavorites || [])]),
+		);
+		await this.redis.set(userFavoritesKey, JSON.stringify(mergedFavorites));
 	}
 	async setUserPurchaseCache(userEmail: string): Promise<string> {
 		const userPurchasesKey = `purchases:user:${userEmail}`;

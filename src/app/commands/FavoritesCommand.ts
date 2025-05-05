@@ -4,6 +4,8 @@ import type { IInput } from "../../core/interfaces";
 import { ProductModel, UserModel } from "../../database";
 import { Command } from "./Command";
 import type { Db } from "mongodb";
+import { RemoveFavoriteController } from "../../controllers/users/RemoveFavoriteController";
+import { SynchronizeFavoritesCacheController } from "../../controllers/users/SynchronizeFavoriteCacheController";
 
 export class FavoritesCommand extends Command {
 	private userModel: UserModel;
@@ -36,10 +38,23 @@ export class FavoritesCommand extends Command {
 					break;
 				}
 				case "remove-favorite": {
+					const controller = new RemoveFavoriteController(
+						this.userModel,
+						this.input,
+						this.productModel,
+						this.redis,
+					);
+					await controller.handle();
 					break;
 				}
-				case "exit":
+				case "exit": {
+					const controller = new SynchronizeFavoritesCacheController(
+						this.redis,
+						this.userModel,
+					);
+					await controller.handle();
 					return;
+				}
 				default:
 					console.log("Opção inválida");
 					break;

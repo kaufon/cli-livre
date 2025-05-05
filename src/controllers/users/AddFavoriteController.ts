@@ -1,5 +1,5 @@
 import type { ObjectId } from "mongodb";
-import { CacheController } from "./FavoriteController";
+import { CacheController } from "./CacheController";
 
 export class AddFavoriteController extends CacheController {
 	async handle(): Promise<void> {
@@ -20,6 +20,6 @@ export class AddFavoriteController extends CacheController {
       return;
     }
 		userCacheData.push(favoriteProduct);
-    await this.redis.set(`favorites:user:${selectedUser.email}`, JSON.stringify(userCacheData));
+   await this.redis.set(`favorites:user:${selectedUser.email}`, JSON.stringify(userCacheData));
 	}
 }

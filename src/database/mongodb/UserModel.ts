@@ -1,4 +1,5 @@
 import { ObjectId, type Collection } from "mongodb";
+import { FavoritesCommand } from "../../app/commands/FavoritesCommand";
 
 type Address = {
 	city: string;
@@ -126,4 +127,10 @@ export class UserModel {
 			{ $pull: { purchases: { _id: purchaseId } } },
 		);
 	}
+  async setFavorites(userEmail: string,favorites: FavoriteProduct[]){
+    return await this.collection.updateOne(
+      {email: userEmail},
+      {$set: {favorites: favorites}}
+    )
+  }
 }
