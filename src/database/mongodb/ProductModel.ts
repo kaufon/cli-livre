@@ -14,7 +14,6 @@ type Seller = {
   address: Address;
 };
 
-type ProductProperties = Record<string, string | number | boolean | null>;
 
 export type ProductDocument = {
   _id?: ObjectId;
@@ -28,7 +27,7 @@ export class ProductModel {
   constructor(private collection: Collection<ProductDocument>) { }
 
   async addProduct(product: ProductDocument): Promise<ProductDocument> {
-    const result = await this.collection.insertOne(product);
+    await this.collection.insertOne(product);
     return product;
   }
 

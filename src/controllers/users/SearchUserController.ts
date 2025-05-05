@@ -1,5 +1,5 @@
 import type { IInput } from "../../core/interfaces";
-import type { UserModel } from "../../database/UserModel";
+import type { UserModel } from "../../database";
 import { SelectUserController } from "./SelectUserController";
 
 export class SearchUserController {

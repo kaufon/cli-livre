@@ -6,24 +6,19 @@ import {
 	SearchUserController,
 	UpdateUserController,
 } from "../../controllers/users";
-import { AddPurchaseController } from "../../controllers/users/AddPurchaseController";
-import { RemovePurchaseController } from "../../controllers/users/RemovePurchaseController";
-import { ProductModel, SellerModel, UserModel } from "../../database";
+import { UserModel } from "../../database";
 import { Command } from "./Command";
 import type Redis from "ioredis";
 import { FavoritesCommand } from "./FavoritesCommand";
+import { PurchasesCommand } from "./PurchasesCommand";
 export class UsersCommands extends Command {
 	private userModel: UserModel;
-	private productModel: ProductModel;
-	private sellerModel: SellerModel;
 	private db: Db;
 	constructor(input: IInput, db: Db, redis: Redis) {
 		super(input, redis);
 		this.input = input;
 		this.db = db;
 		this.userModel = new UserModel(db.collection("users"));
-		this.productModel = new ProductModel(db.collection("products"));
-		this.sellerModel = new SellerModel(db.collection("sellers"));
 	}
 	public async run(): Promise<void> {
 		const isLoggedIn = await this.validateSession();
@@ -36,34 +31,19 @@ export class UsersCommands extends Command {
 			["Deletar Cliente", "delete"],
 			["Buscar Clientes", "search"],
 			["Favoritos", "favorites"],
-			["Purchases", "purchases"],
+			["Compras", "purchases"],
 			["Voltar", "exit"],
 		]);
 		switch (options) {
-			case "buy-product": {
-				const controller = new AddPurchaseController(
-					this.input,
-					this.userModel,
-					this.sellerModel,
-					this.productModel,
-				);
-				await controller.handle();
-				return;
-			}
-			case "cancel-purchase": {
-				const controller = new RemovePurchaseController(
-					this.input,
-					this.userModel,
-					this.sellerModel,
-					this.productModel,
-				);
-				await controller.handle();
+			case "purchases": {
+				const command = new PurchasesCommand(this.db, this.input, this.redis);
+				await command.run();
 				return;
 			}
 			case "favorites": {
 				const command = new FavoritesCommand(this.db, this.input, this.redis);
 				await command.run();
-        break
+				break;
 			}
 			case "add": {
 				const controller = new CreateUserController(this.userModel, this.input);

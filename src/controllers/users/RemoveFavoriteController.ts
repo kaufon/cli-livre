@@ -1,4 +1,3 @@
-import type { ObjectId } from "mongodb";
 import { CacheController } from "./CacheController";
 
 export class RemoveFavoriteController extends CacheController {
@@ -17,7 +16,7 @@ export class RemoveFavoriteController extends CacheController {
 			console.log("Nenhum produto favorito encontrado.");
 			return;
 		}
-		const selectedProduct = await this.getProductsFromUser(products);
+		const selectedProduct = await this.getFavoritesFromUser(products);
 		if (!selectedProduct) return;
 		const filterdCache = cachedFavorites.filter(
 			(item) => item.productId !== selectedProduct.productId,

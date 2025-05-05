@@ -1,9 +1,8 @@
 import type { ObjectId } from "mongodb";
 import type { IInput } from "../../core/interfaces";
 import type {
-  ProductDocument,
   ProductModel,
-} from "../../database/ProductModel";
+} from "../../database";
 import { ListProductsController } from "./ListProductsController";
 
 export class SelectSellerProductController {

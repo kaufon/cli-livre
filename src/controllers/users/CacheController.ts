@@ -4,6 +4,8 @@ import type { ProductModel, UserModel } from "../../database";
 import { SelectUserController } from "./SelectUserController";
 import { SelectProductController } from "../products/SelectProductController";
 import { SelectSellerProductController } from "../products";
+import { SelectPurchaseController } from "./SelectPurchaseController";
+import { PurchaseDto } from "../../core/dtos/PurchaseDto";
 
 export abstract class CacheController {
 	protected userModel: UserModel;
@@ -35,12 +37,23 @@ export abstract class CacheController {
 		).handle();
 		return selectedProduct;
 	}
-	async getProductsFromUser(products: any[]) {
+	async getFavoritesFromUser(products: any[]) {
 		const selectedProduct = await new SelectSellerProductController(
 			this.productModel,
 			this.input,
 		).handle(products);
 		return selectedProduct;
+	}
+	async getUserPurchasesFromUser(purchases: PurchaseDto[]) {
+		const selectedPurchase = await new SelectPurchaseController(
+			this.input,
+		).handle(purchases);
+		return selectedPurchase;
+	}
+	async getUserPurchasesCache(userEmail: string): Promise<PurchaseDto[]> {
+		const cache = await this.redis.get(`purchases:user:${userEmail}`);
+		const data = cache ? JSON.parse(cache) : [];
+		return data;
 	}
 	async getUserFavoriteCache(userEmail: string): Promise<any[]> {
 		const cache = await this.redis.get(`favorites:user:${userEmail}`);
@@ -57,15 +70,17 @@ export abstract class CacheController {
 		);
 		await this.redis.set(userFavoritesKey, JSON.stringify(mergedFavorites));
 	}
-	async setUserPurchaseCache(userEmail: string): Promise<string> {
+	async setInitialUserPurchaseCache(userEmail: string): Promise<string> {
 		const userPurchasesKey = `purchases:user:${userEmail}`;
+		const cachedPurchases = await this.getUserPurchasesCache(userEmail);
 		const userPurchases =
 			await this.userModel.getPurchasesFromUserEmail(userEmail);
-		const userPurchasesArray = userPurchases
-			? JSON.stringify(userPurchases)
-			: [];
-		await this.redis.set(userPurchasesKey, JSON.stringify(userPurchasesArray));
+		const mergePurchases = Array.from(
+			new Set([...(cachedPurchases || []), ...(userPurchases || [])]),
+		);
+		await this.redis.set(userPurchasesKey, JSON.stringify(mergePurchases));
 		return userPurchasesKey;
 	}
+
 	abstract handle(): Promise<void>;
 }

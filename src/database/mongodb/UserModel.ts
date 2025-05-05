@@ -127,6 +127,12 @@ export class UserModel {
 			{ $pull: { purchases: { _id: purchaseId } } },
 		);
 	}
+	async setPurchases(userEmail: string, purchases: Purchases[]) {
+		return await this.collection.updateOne(
+			{ email: userEmail },
+			{ $set: { purchases: purchases } },
+		);
+	}
 	async setFavorites(userEmail: string, favorites: FavoriteProduct[]) {
 		return await this.collection.updateOne(
 			{ email: userEmail },

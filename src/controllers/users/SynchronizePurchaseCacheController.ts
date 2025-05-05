@@ -1,0 +1,23 @@
+import type Redis from "ioredis";
+import type { UserModel } from "../../database";
+
+export class SynchronizePurchaseCacheController {
+  private userModel: UserModel
+  private redis: Redis
+  constructor(redis: Redis,userModel:UserModel){
+    this.userModel = userModel
+    this.redis = redis
+  }
+
+  public async handle(): Promise<void> {
+    const allFavoritesKeys = await this.redis.keys("purchases*");
+    for (const key of allFavoritesKeys) {
+      const userFavoriteProductsCache = await this.redis.get(key);
+      const userFavoriteProducts = JSON.parse(userFavoriteProductsCache as string);
+      const userEmail = key.slice(15);
+      this.userModel.setPurchases(userEmail, userFavoriteProducts);
+      this.redis.del(key);
+    }
+  }
+      
+}
