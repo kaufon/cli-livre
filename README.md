@@ -42,3 +42,13 @@ docker compose up
 ```bash
 npm run dev
 ```
+
+## Arquitetura do Projeto 🏗️
+
+Este projeto segue uma variação do padrão **MVC (Model-View-Controller)** adaptado para aplicações de linha de comando (CLI). Em vez das tradicionais **Views**, utilizamos **Commands**, que representam as interações do usuário via terminal.
+
+- **Model**: Contém a lógica de dados e as entidades da aplicação.
+- **Controller**: Atua como intermediário entre os Commands e os Models, orquestrando regras de negócio.
+- **Command**: Substitui as Views tradicionais. Cada Command representa uma funcionalidade acessível via CLI e é responsável por lidar com o input/output do usuário.
+
+Essa estrutura favorece a **separação de responsabilidades**, facilita testes unitários e promove a escalabilidade do projeto.
