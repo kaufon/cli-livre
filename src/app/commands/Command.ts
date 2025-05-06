@@ -19,7 +19,7 @@ export abstract class Command {
 				`session:user:${email}`,
 				JSON.stringify({ email, password }),
         "EX",
-        30
+        10
 			);
 			return false;
 		}
