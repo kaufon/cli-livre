@@ -18,8 +18,9 @@ export abstract class Command {
 			const user = await this.redis.set(
 				`session:user:${email}`,
 				JSON.stringify({ email, password }),
+        "EX",
+        30
 			);
-			await this.redis.expire("session:user", 60 * 60);
 			return false;
 		}
 		return true;

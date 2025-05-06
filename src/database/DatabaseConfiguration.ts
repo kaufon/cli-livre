@@ -1,4 +1,4 @@
-import { MongoClient, Db } from "mongodb";
+import { MongoClient, type Db } from "mongodb";
 import Redis from "ioredis";
 
 class DatabaseService {
