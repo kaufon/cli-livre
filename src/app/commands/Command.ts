@@ -11,7 +11,7 @@ export abstract class Command {
 	}
 	protected async validateSession(): Promise<boolean> {
 		const userSession = await this.redis.keys("session:user*");
-		if (!userSession) {
+		if (userSession.length === 0) {
 			console.log("❌ Você não está logado.");
 			const email = await this.input.textInput("Digite seu email");
 			const password = await this.input.textInput("Digite sua senha");
