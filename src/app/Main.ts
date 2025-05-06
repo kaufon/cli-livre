@@ -5,6 +5,7 @@ import { SellersCommands } from "./commands/SellersCommand";
 import { UsersCommands } from "./commands/UserCommand";
 import { Input } from "./libs/Input";
 import type { Redis } from "ioredis";
+import { LogoutController } from "../controllers/users/LogoutController";
 export class MercadoLivreSystem {
 	private input: IInput;
 	private mongoDatabase: Db;
@@ -21,6 +22,7 @@ export class MercadoLivreSystem {
 				["Clientes", "clients"],
 				["Produtos", "products"],
 				["Vendedores", "sellers"],
+				["Deslogar", "logout"],
 				["Sair", "exit"],
 			]);
 			switch (option) {
@@ -50,6 +52,11 @@ export class MercadoLivreSystem {
 					);
 					await command.run();
 					break;
+				}
+				case "logout": {
+					const controller = new LogoutController(this.redisDatabase);
+					await controller.handle();
+          break
 				}
 				case "exit":
 					isRunning = false;

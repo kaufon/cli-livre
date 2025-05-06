@@ -5,7 +5,13 @@ export class GetCurrentUserController extends CacheController {
 		const userSession = await this.redis.keys("session:user*");
 		const userEmail = userSession[0].split(":")[2];
 		const user = await this.userModel.getUserFromEmail(userEmail);
-		if (!user) return;
+		if (!user) {
+			console.log(
+				"Parece que voce entrou com um usuario falso!.Sem informacoes pra voce",
+			);
+			return;
+		}
+
 		const formatedUser = {
 			Nome: user.name,
 			Email: user.email,
