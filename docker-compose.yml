@@ -23,7 +23,18 @@ services:
         REDIS_HOST_PASSWORD: example
       volumes:
         - redis-data:/data
+  cassandradb:
+    image: cassandra:latest
+    container_name: cassandra-container
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_USER=admin
+      - CASSANDRA_PASSWORD=admin
+    volumes:
+      - cassandra-data:/var/lib/cassandra
 
 volumes:
   mongodb-data:
   redis-data:
+  cassandra-data:
