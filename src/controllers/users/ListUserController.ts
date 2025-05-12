@@ -8,12 +8,11 @@ export class ListAllUsersControler {
   async handle() {
     const users = await this.userModel.listAllUsers();
     const filteredUsers = users.map((user) => ({
-      ID: user.id,
       Nome: user.name,
       Email: user.email,
       Cidade: user.city,
       Rua: user.street,
-      CEP: user.zipCode,
+      CEP: user.zipcode,
     }));
     console.table(filteredUsers);
     return;

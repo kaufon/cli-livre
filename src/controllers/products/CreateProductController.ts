@@ -33,7 +33,16 @@ export class CreateProductController {
 			name: name,
 			price,
 			description,
-			seller: { name: seller.name, id: seller._id, address: seller.address },
+			seller: {
+				name: seller.name,
+				id: seller._id,
+				address: {
+					city: seller.city,
+					zipCode: seller.zipcode,
+					street: seller.street,
+					number: seller.number,
+				},
+			},
 		});
 		this.sellerModel.addProduct(
 			{ ...product, productId: product.id as string },

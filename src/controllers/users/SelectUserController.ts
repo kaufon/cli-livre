@@ -1,4 +1,3 @@
-import type { ObjectId } from "mongodb";
 import type { IInput } from "../../core/interfaces";
 import type { UserModel } from "../../database/UserModel";
 import { ListAllUsersControler } from "./ListUserController";
@@ -10,6 +9,7 @@ export class SelectUserController {
 		this.userModel = userModel;
 		this.input = input;
 	}
+
 	async handle(): Promise<{
 		id: string;
 		name: string;
@@ -36,20 +36,47 @@ export class SelectUserController {
 			console.log("Nenhum usuário encontrado.");
 			return null;
 		}
-		const list = new ListAllUsersControler(this.userModel);
-		let selectedUser;
-		await list.handle();
-		while (true) {
-			const selectedUserEmail = await this.input.textInput(
-				"Digite o email do usuário: ",
-			);
-			selectedUser = users.find((user) => user.email === selectedUserEmail);
-			if (selectedUser) {
-				console.log(`Usuário selecionado: ${selectedUser.name}`);
-				break;
+
+		await new ListAllUsersControler(this.userModel).handle();
+
+		let selectedUser = null;
+		while (!selectedUser) {
+			const email = await this.input.textInput("Digite o email do usuário: ");
+			const basicUser = users.find((user) => user.email === email);
+			if (!basicUser) {
+				console.log("Usuário não encontrado. Tente novamente.");
+				continue;
 			}
-			console.log("Usuário não encontrado. Tente novamente.");
+
+			selectedUser = await this.userModel.findUserWithRelations(basicUser.id);
+			if (!selectedUser) {
+				console.log("Erro ao buscar dados completos do usuário.");
+				return null;
+			}
+
+			console.log(`Usuário selecionado: ${selectedUser.name}`);
 		}
-		return selectedUser;
+
+		return {
+			id: selectedUser.id,
+			name: selectedUser.name,
+			email: selectedUser.email,
+			city: selectedUser.city,
+			street: selectedUser.street,
+			zipCode: selectedUser.zipCode,
+			number: selectedUser.number,
+			favorites: selectedUser.favorites.map((f: any) => ({
+				productId: f.product_id,
+				productName: f.product_name,
+				productDescription: f.product_description,
+				productPrice: Number(f.product_price),
+			})),
+			purchases: selectedUser.purchases.map((p: any) => ({
+				productId: p.product_id,
+				productName: p.product_name,
+				totalPrice: Number(p.total_price),
+				quantity: p.quantity.toString(),
+			})),
+		};
 	}
 }

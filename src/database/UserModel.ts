@@ -149,4 +149,27 @@ export class UserModel {
 			[userId, purchaseId],
 		);
 	}
+	async findUserWithRelations(userId: string) {
+		const userResult = await this.client.execute(
+			"SELECT * FROM MercadoLivre.users WHERE id = ?",
+			[userId],
+		);
+		const user = userResult.first();
+		if (!user) return null;
+
+		const favoritesResult = await this.client.execute(
+			"SELECT * FROM MercadoLivre.favorites WHERE user_id = ?",
+			[userId],
+		);
+		const purchasesResult = await this.client.execute(
+			"SELECT * FROM MercadoLivre.purchases WHERE user_id = ?",
+			[userId],
+		);
+
+		return {
+			...user,
+			favorites: favoritesResult.rows,
+			purchases: purchasesResult.rows,
+		};
+	}
 }

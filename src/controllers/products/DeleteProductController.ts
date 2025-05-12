@@ -24,7 +24,6 @@ export class DeleteProductController {
     if (!seller) {
       return;
     }
-    console.log(seller.products)
     const product = await new SelectSellerProductController(
       this.productModel,
       this.input,

@@ -13,6 +13,7 @@ export class SelectSellerProductController {
     this.productModel = productModel;
     this.input = input;
   }
+
   async handle(
     products: Array<{
       productId: string;
@@ -39,22 +40,29 @@ export class SelectSellerProductController {
       console.log("Nenhum produto encontrado.");
       return null;
     }
+
     const list = new ListProductsController(this.productModel);
-    let selectedProduct;
     await list.handle(products);
+
+    let selectedProductIndex;
     while (true) {
-      const selectedProductId = await this.input.textInput(
-        "Digite o id do produto: ",
+      const selectedIndexInput = await this.input.textInput(
+        "Digite o índice do produto (começando de 0): ",
       );
-      selectedProduct = products.find(
-        (product) => product.productId?.toHexString() === selectedProductId,
-      );
-      if (selectedProduct) {
-        console.log(`Produto selecionado: ${selectedProduct.name}`);
-        break;
+
+      selectedProductIndex = Number.parseInt(selectedIndexInput, 10);
+      if (Number.isNaN(selectedProductIndex)) {
+        console.log("Índice inválido. Por favor, digite um número válido.");
+        continue;
       }
-      console.log("Produto não encontrado. Tente novamente.");
+
+      if (selectedProductIndex >= 0 && selectedProductIndex < products.length) {
+        const selectedProduct = products[selectedProductIndex];
+        console.log(`Produto selecionado: ${selectedProduct.name}`);
+        return selectedProduct;  // Return the selected product based on the index
+      }
+
+      console.log("Índice fora do intervalo. Tente novamente.");
     }
-    return selectedProduct;
   }
 }

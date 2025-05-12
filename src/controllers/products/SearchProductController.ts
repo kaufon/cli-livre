@@ -13,8 +13,7 @@ export class SearchProductController {
     const product = await new SelectProductController(this.productModel, this.input).handle();
     if(!product) return
     const filterdProduct = {
-      ID: product._id?.toHexString(),
-      Preco: product.price,
+      Preco: Math.round(Number(product.price)),
       Nome: product.name,
       Descricao: product.description,
       Vendedor: product.seller.name,

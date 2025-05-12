@@ -67,7 +67,7 @@ export class SelectSellerController {
 				productId: p.product_id,
 				name: p.name,
 				description: p.description,
-				price: Number(p.price),
+				price: p.price
 			})),
 		};
 	}

@@ -17,7 +17,8 @@ export class UpdateUserController {
       this.userModel,
       this.input,
     ).handle();
-    const userId = selectedUser._id.toHexString()
+    if(!selectedUser) return
+    const userId = selectedUser.id;
 
     let isRunning = true;
     while (isRunning) {

@@ -8,14 +8,13 @@ export class ListProductsController {
   }
   async handle(
     products: Array<{
-      productId: ObjectId;
+      productId: string;
       name: string;
       description: string;
       price: number;
     }>,
   ) {
     const filteredSellers = products.map((product) => ({
-      ID: product.productId?.toHexString(),
       Preco: product.price,
       Nome: product.name,
       Descricao: product.description,
