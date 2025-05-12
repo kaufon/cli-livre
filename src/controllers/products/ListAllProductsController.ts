@@ -1,5 +1,4 @@
-import { ObjectId } from "mongodb";
-import { ProductDocument, ProductModel } from "../../database/ProductModel";
+import type {  ProductModel } from "../../database/ProductModel";
 
 export class ListAllProductsController {
   private productModel: ProductModel;
@@ -9,7 +8,7 @@ export class ListAllProductsController {
   async handle() {
     const products = await this.productModel.listAll();
     const filteredSellers = products.map((product) => ({
-      ID: product._id?.toHexString(),
+      ID: product.id,
       Preco: product.price,
       Nome: product.name,
     }));

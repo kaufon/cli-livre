@@ -14,7 +14,8 @@ export class DeleteUserController {
       this.userModel,
       this.input,
     ).handle();
-    this.userModel.deleteUser(selectedUser._id.toString());
+    if(!selectedUser) return
+    this.userModel.deleteUser(selectedUser.id);
     console.log("Usuário deletado com sucesso!");
     return;
   }

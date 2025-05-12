@@ -1,5 +1,3 @@
-import { Collection } from "mongodb";
-import { Input } from "../../app/libs/Input";
 import type { IInput } from "../../core/interfaces";
 import type { UserModel } from "../../database/UserModel";
 

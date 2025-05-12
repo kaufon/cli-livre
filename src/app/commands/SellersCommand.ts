@@ -2,68 +2,56 @@ import { Db } from "mongodb";
 import type { IInput } from "../../core/interfaces";
 import { SellerModel } from "../../database/SellerModel";
 import {
-  CreateSellerController,
-  DeleteSellerController,
-  SearchSellerController,
-  UpdateSellerController,
+	CreateSellerController,
+	DeleteSellerController,
+	SearchSellerController,
+	UpdateSellerController,
 } from "../../controllers/sellers";
+import type { Client } from "cassandra-driver";
 export class SellersCommands {
-  private input: IInput;
-  private database: Db;
-  private model: SellerModel;
-  constructor(input: IInput, db: Db) {
-    this.input = input;
-    this.database = db;
-    this.model = new SellerModel(db.collection("sellers"));
-  }
-  public async run(): Promise<void> {
-    const options = await this.input.selectInput("Pls escolha", [
-      ["Cadastrar Vendedor", "add"],
-      ["Atualizar Vendedor", "update"],
-      ["Deletar Vendedor", "delete"],
-      ["Buscar Vendedor", "search"],
-      ["Voltar", "exit"],
-    ]);
-    switch (options) {
-      case "add": {
-        const controller = await new CreateSellerController(
-          this.model,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
-      case "search": {
-        const controller = await new SearchSellerController(
-          this.model,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
-      case "update": {
-        const controller = await new UpdateSellerController(
-          this.model,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
-      case "delete": {
-        const controller = await new DeleteSellerController(
-          this.model,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
-      case "exit": {
-        return;
-      }
-      default: {
-        console.log("Opção inválida");
-        return;
-      }
-    }
-  }
+	private input: IInput;
+	private client: Client;
+	private model: SellerModel;
+	constructor(input: IInput, cassandraClient: Client) {
+		this.input = input;
+		this.model = new SellerModel(cassandraClient);
+	}
+	public async run(): Promise<void> {
+		const options = await this.input.selectInput("Pls escolha", [
+			["Cadastrar Vendedor", "add"],
+			["Atualizar Vendedor", "update"],
+			["Deletar Vendedor", "delete"],
+			["Buscar Vendedor", "search"],
+			["Voltar", "exit"],
+		]);
+		switch (options) {
+			case "add": {
+				const controller = new CreateSellerController(this.model, this.input);
+				await controller.handle();
+				return;
+			}
+			case "search": {
+				const controller = new SearchSellerController(this.model, this.input);
+				await controller.handle();
+				return;
+			}
+			case "update": {
+				const controller = new UpdateSellerController(this.model, this.input);
+				await controller.handle();
+				return;
+			}
+			case "delete": {
+				const controller = new DeleteSellerController(this.model, this.input);
+				await controller.handle();
+				return;
+			}
+			case "exit": {
+				return;
+			}
+			default: {
+				console.log("Opção inválida");
+				return;
+			}
+		}
+	}
 }

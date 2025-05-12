@@ -18,10 +18,10 @@ export class SearchSellerController {
 		const filteredSeller = {
 			Nome: selectedSeller.name,
 			Email: selectedSeller.email,
-			Cidade: selectedSeller.address.city,
-			Rua: selectedSeller.address.street,
-			CEP: selectedSeller.address.zipCode,
-			Número: selectedSeller.address.number,
+			Cidade: selectedSeller.city,
+			Rua: selectedSeller.street,
+			CEP: selectedSeller.zipcode,
+			Número: selectedSeller.number,
 			Produtos: selectedSeller.products.map(
 				(product) =>
 					`${product.name} (${product.description}),Preco: R$ ${product.price}`,

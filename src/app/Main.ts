@@ -1,4 +1,4 @@
-import { Db } from "mongodb";
+import type { Client } from "cassandra-driver";
 import type { IInput } from "../core/interfaces";
 import { ProductsCommands } from "./commands/ProductsCommand";
 import { SellersCommands } from "./commands/SellersCommand";
@@ -6,10 +6,10 @@ import { UsersCommands } from "./commands/UserCommand";
 import { Input } from "./libs/Input";
 export class MercadoLivreSystem {
   private input: IInput;
-  private database: Db;
-  constructor(database: Db) {
+  private client: Client
+  constructor(client:Client) {
     this.input = new Input();
-    this.database = database;
+    this.client = client
   }
   public async run(): Promise<void> {
     let isRunning = true;
@@ -22,17 +22,17 @@ export class MercadoLivreSystem {
       ]);
       switch (option) {
         case "clients": {
-          const command = new UsersCommands(this.input, this.database);
+          const command = new UsersCommands(this.input, this.client);
           await command.run();
           break;
         }
         case "products": {
-          const command = new ProductsCommands(this.input, this.database);
+          const command = new ProductsCommands(this.input, this.client);
           await command.run();
           break;
         }
         case "sellers": {
-          const command = new SellersCommands(this.input, this.database);
+          const command = new SellersCommands(this.input, this.client);
           await command.run();
           break;
         }

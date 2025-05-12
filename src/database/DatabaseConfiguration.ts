@@ -1,35 +1,35 @@
-import { MongoClient, Db } from "mongodb";
-import dotenv from "dotenv";
+import { Client } from "cassandra-driver";
+import { createKeyspace, createTables } from "./DatabaseInit";
 
-dotenv.config();
-
-const uri = "mongodb://root:example@localhost:27017"
-
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: "1",
-    strict: true,
-    deprecationErrors: true,
-  },
-});
-let db: Db;
-
-export const connectToDatabase = async (): Promise<{
-  client: MongoClient;
-  db: Db;
-}> => {
-  if (!db) {
-    try {
-      console.log("🔌 Conectando ao MongoDB...");
-      await client.connect();
-      db = client.db("MercadoLivre"); 
-      console.log("✅ Conectado ao MongoDB com sucesso.");
-    } catch (error) {
-      console.error("❌ Erro ao conectar ao MongoDB:", error);
-      throw error;
-    }
+const cassandraClient = new Client({
+	contactPoints: ["127.0.0.1:"],
+	localDataCenter: "datacenter1",
+  keyspace: "mercadolivre",
+  socketOptions: {
+    connectTimeout: 200000,
+    readTimeout: 200000,
   }
+});
 
-  return { client, db };
+let isConnected = false;
+
+export const connectToDatabase = async (): Promise<{ client: Client }> => {
+	if (!isConnected) {
+		try {
+			console.log("🔌 Connecting to Cassandra...");
+			await createKeyspace();
+			await createTables();
+
+			await cassandraClient.connect();
+			isConnected = true;
+			console.log("✅ Connected to Cassandra successfully.");
+		} catch (error) {
+			console.error("❌ Failed to connect to Cassandra:", error);
+			throw error;
+		}
+	}
+
+	return { client: cassandraClient };
 };
-export { client };
+
+export { cassandraClient as client };

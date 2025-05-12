@@ -18,10 +18,9 @@ export class SearchUserController {
 		const filteredUser = {
 			Nome: selectedUser.name,
 			Email: selectedUser.email,
-			Cidade: selectedUser.address.city,
-			Rua: selectedUser.address.street,
-			CEP: selectedUser.address.zipCode,
-			Número: selectedUser.address.number,
+			Cidade: selectedUser.city,
+			Rua: selectedUser.street,
+			Número: selectedUser.number,
 			Favoritos: selectedUser.favorites
 				.map((fav) => `${fav.productName} (${fav.productDescription})`)
 				.join(", "),

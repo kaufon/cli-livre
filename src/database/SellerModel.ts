@@ -1,142 +1,201 @@
-import { type Collection, ObjectId } from "mongodb";
-import { UpdateUserController } from "../controllers/users";
-import { ProductDocument } from "./ProductModel";
+import type { Client } from "cassandra-driver";
+import { v4 as uuidv4 } from "uuid";
 
 type Address = {
-  city: string;
-  street: string;
-  zipCode: string;
-  number: string;
+	city: string;
+	street: string;
+	zipCode: string;
+	number: string;
 };
+
 type Product = {
-  productId: ObjectId;
-  name: string;
-  description: string;
-  price: number;
+	productId: string;
+	name: string;
+	description: string;
+	price: number;
 };
+
 type Sells = {
-  _id: ObjectId;
-  productId: ObjectId;
-  productName: string;
-  quantity: number;
-  price: number;
+	sellId: string;
+	productId: string;
+	productName: string;
+	quantity: number;
+	price: number;
 };
-type SellerDocument = {
-  _id?: ObjectId;
-  name: string;
-  email: string;
-  password: string;
-  address: Address;
-  products: Product[];
-  sells: Sells[];
-};
+
 type UpdateSellerParams = {
-  id: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  address?: Address;
+	id: string;
+	name?: string;
+	email?: string;
+	password?: string;
+	address?: Address;
 };
+
 export class SellerModel {
-  constructor(private collection: Collection<SellerDocument>) { }
-  async addSeller(
-    name: string,
-    address: Address,
-    email: string,
-    password: string,
-  ) {
-    const seller: SellerDocument = {
-      name,
-      email,
-      password,
-      address,
-      products: [],
-      sells: [],
-    };
-    return await this.collection.insertOne(seller);
-  }
-  async listAllSellers() {
-    return await this.collection.find().toArray();
-  }
-  async deleteSeller(id: string) {
-    const objectId = new ObjectId(id);
-    return await this.collection.deleteOne({ _id: objectId });
-  }
-  async updateSeller({
-    id,
-    name,
-    email,
-    password,
-    address,
-  }: UpdateSellerParams) {
-    const objectId = new ObjectId(id);
-    const updateData: Partial<SellerDocument> = {};
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
-    if (password) updateData.password = password;
-    if (address) updateData.address = address;
+	constructor(private client: Client) {}
 
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $set: updateData },
-    );
-  }
-  async addProduct(
-    { _id, name, price, description }: ProductDocument,
-    sellerId: ObjectId,
-  ) {
-    const objectId = new ObjectId(sellerId);
-    const product: Product = {
-      productId: new ObjectId(_id),
-      name,
-      description,
-      price,
-    };
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $push: { products: product } },
-    );
-  }
-  async removeProduct(productId: ObjectId, sellerId: ObjectId) {
-    const objectId = new ObjectId(sellerId);
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $pull: { products: { productId: new ObjectId(productId) } } },
-    );
-  }
-  async updateSellerProduct(
-    sellerId: ObjectId,
-    productId: ObjectId,
-    updates: Partial<Omit<Product, "productId">>,
-  ) {
-    const updateFields: Record<string, any> = {};
+	async addSeller(
+		name: string,
+		address: Address,
+		email: string,
+		password: string,
+	) {
+		const id = uuidv4();
+		const query = `
+      INSERT INTO sellers (id, name, email, password, city, street, zipCode, number)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+		await this.client.execute(query, [
+			id,
+			name,
+			email,
+			password,
+			address.city,
+			address.street,
+			address.zipCode,
+			address.number,
+		]);
+		return id;
+	}
 
-    for (const [key, value] of Object.entries(updates)) {
-      updateFields[`products.$.${key}`] = value;
-    }
+	async listAllSellers() {
+		const result = await this.client.execute("SELECT * FROM sellers");
+		return result.rows;
+	}
 
-    return await this.collection.updateOne(
-      { _id: sellerId, "products.productId": productId },
-      { $set: updateFields },
-    );
-  }
-  async addSell(sellerId: ObjectId, sell: Sells) {
-    return await this.collection.updateOne(
-      { _id: sellerId },
-      { $push: { sells: sell } },
-    );
-  }
-  async removeSell(sellerId: ObjectId, sellId: ObjectId) {
-    return await this.collection.updateOne(
-      { _id: sellerId },
-      { $pull: { sells: { _id: sellId } } },
-    );
-  }
-  async findSellerIdByProductId(productId: ObjectId): Promise<ObjectId | null> {
-    const seller = await this.collection.findOne(
-      { "products.productId": productId },
-      { projection: { _id: 1 } },
-    );
-    return seller?._id ?? null
-  }
+	async deleteSeller(id: string) {
+		await this.client.execute("DELETE FROM sellers WHERE id = ?", [id]);
+	}
+
+	async updateSeller({
+		id,
+		name,
+		email,
+		password,
+		address,
+	}: UpdateSellerParams) {
+		const updates: string[] = [];
+		const values: any[] = [];
+
+		if (name) {
+			updates.push("name = ?");
+			values.push(name);
+		}
+		if (email) {
+			updates.push("email = ?");
+			values.push(email);
+		}
+		if (password) {
+			updates.push("password = ?");
+			values.push(password);
+		}
+		if (address) {
+			updates.push("city = ?, street = ?, zipCode = ?, number = ?");
+			values.push(
+				address.city,
+				address.street,
+				address.zipCode,
+				address.number,
+			);
+		}
+
+		const query = `UPDATE sellers SET ${updates.join(", ")} WHERE id = ?`;
+		values.push(id);
+		await this.client.execute(query, values);
+	}
+
+	async addProduct(product: Product, sellerId: string) {
+		const query = `
+      INSERT INTO seller_products (seller_id, product_id, name, description, price)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+		await this.client.execute(query, [
+			sellerId,
+			product.productId,
+			product.name,
+			product.description,
+			product.price,
+		]);
+	}
+
+	async removeProduct(productId: string, sellerId: string) {
+		const query =
+			"DELETE FROM seller_products WHERE seller_id = ? AND product_id = ?";
+		await this.client.execute(query, [sellerId, productId]);
+	}
+
+	async updateSellerProduct(
+		sellerId: string,
+		productId: string,
+		updates: Partial<Omit<Product, "productId">>,
+	) {
+		const fields: string[] = [];
+		const values: string[] = [];
+
+		if (updates.name) {
+			fields.push("name = ?");
+			values.push(updates.name);
+		}
+		if (updates.description) {
+			fields.push("description = ?");
+			values.push(updates.description);
+		}
+		if (updates.price !== undefined) {
+			fields.push("price = ?");
+			values.push(updates.price.toString());
+		}
+
+		const query = `UPDATE seller_products SET ${fields.join(", ")} WHERE seller_id = ? AND product_id = ?`;
+		values.push(sellerId, productId);
+		await this.client.execute(query, values);
+	}
+
+	async addSell(sellerId: string, sell: Omit<Sells, "sellId">) {
+		const sellId = uuidv4();
+		const query = `
+      INSERT INTO seller_sells (seller_id, sell_id, product_id, product_name, quantity, price)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+		await this.client.execute(query, [
+			sellerId,
+			sellId,
+			sell.productId,
+			sell.productName,
+			sell.quantity,
+			sell.price,
+		]);
+	}
+
+	async removeSell(sellerId: string, sellId: string) {
+		const query =
+			"DELETE FROM seller_sells WHERE seller_id = ? AND sell_id = ?";
+		await this.client.execute(query, [sellerId, sellId]);
+	}
+
+	async findSellerIdByProductId(productId: string): Promise<string | null> {
+		const query =
+			"SELECT seller_id FROM seller_products WHERE product_id = ? ALLOW FILTERING";
+		const result = await this.client.execute(query, [productId]);
+		const row = result.first();
+		return row ? row.seller_id : null;
+	}
+	async findSellerWithProducts(sellerId: string) {
+		const sellerResult = await this.client.execute(
+			"SELECT * FROM MercadoLivre.sellers WHERE id = ?",
+			[sellerId],
+		);
+		const seller = sellerResult.first();
+		if (!seller) return null;
+
+		const productsResult = await this.client.execute(
+			"SELECT * FROM MercadoLivre.seller_products WHERE seller_id = ?",
+			[sellerId],
+		);
+		const products = productsResult.rows;
+
+		return {
+			...seller,
+			products,
+		};
+	}
 }

@@ -1,122 +1,152 @@
-import { ObjectId, type Collection } from "mongodb";
+import type { Client } from "cassandra-driver";
+import { v4 as uuidv4 } from "uuid";
 
 type Address = {
-  city: string;
-  street: string;
-  zipCode: string;
-  number: string;
+	city: string;
+	street: string;
+	zipCode: string;
+	number: string;
 };
 
 type FavoriteProduct = {
-  productId: ObjectId;
-  productName: string;
-  productDescription: string;
-  productPrice: number;
+	productId: string;
+	productName: string;
+	productDescription: string;
+	productPrice: number;
 };
 
 type Purchases = {
-  _id: ObjectId
-  productId: ObjectId;
-  productName: string;
-  productPrice: number;
-  quantity: number;
-  totalPrice: number
-};
-
-type UserDocument = {
-  _id?: ObjectId;
-  name: string;
-  email: string;
-  password: string;
-  address: Address;
-  favorites: FavoriteProduct[];
-  purchases: Purchases[];
+	purchaseId: string;
+	productId: string;
+	productName: string;
+	productPrice: number;
+	quantity: number;
+	totalPrice: number;
 };
 
 type UpdateUserParams = {
-  id: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  address?: Address;
+	id: string;
+	name?: string;
+	email?: string;
+	password?: string;
+	address?: Address;
 };
 
 export class UserModel {
-  constructor(private collection: Collection<UserDocument>) {}
+	constructor(private client: Client) {}
 
-  async addUser(
-    name: string,
-    email: string,
-    password: string,
-    address: Address
-  ) {
-    const user: UserDocument = {
-      name,
-      email,
-      password,
-      address,
-      favorites: [],
-      purchases: [],
-    };
-    return await this.collection.insertOne(user);
-  }
+	async addUser(
+		name: string,
+		email: string,
+		password: string,
+		address: Address,
+	) {
+		const id = uuidv4();
+		const query = `
+      INSERT INTO users (id, name, email, password, city, street, zipCode, number)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+		await this.client.execute(query, [
+			id,
+			name,
+			email,
+			password,
+			address.city,
+			address.street,
+			address.zipCode,
+			address.number,
+		]);
+		return id;
+	}
 
-  async listAllUsers() {
-    return await this.collection.find().toArray();
-  }
+	async listAllUsers() {
+		const result = await this.client.execute("SELECT * FROM users");
+		return result.rows;
+	}
 
-  async deleteUser(id: string) {
-    const objectId = new ObjectId(id);
-    return await this.collection.deleteOne({ _id: objectId });
-  }
+	async deleteUser(id: string) {
+		await this.client.execute("DELETE FROM users WHERE id = ?", [id]);
+	}
 
-  async updateUser({ id, name, email, password, address }: UpdateUserParams) {
-    const objectId = new ObjectId(id);
-    const updateFields: Partial<UserDocument> = {};
+	async updateUser({ id, name, email, password, address }: UpdateUserParams) {
+		const updates: string[] = [];
+		const values: any[] = [];
 
-    if (name !== undefined) updateFields.name = name;
-    if (email !== undefined) updateFields.email = email;
-    if (password !== undefined) updateFields.password = password;
-    if (address !== undefined) updateFields.address = address;
+		if (name) {
+			updates.push("name = ?");
+			values.push(name);
+		}
+		if (email) {
+			updates.push("email = ?");
+			values.push(email);
+		}
+		if (password) {
+			updates.push("password = ?");
+			values.push(password);
+		}
+		if (address) {
+			updates.push("city = ?, street = ?, zipCode = ?, number = ?");
+			values.push(
+				address.city,
+				address.street,
+				address.zipCode,
+				address.number,
+			);
+		}
 
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $set: updateFields }
-    );
-  }
+		const query = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+		values.push(id);
+		await this.client.execute(query, values);
+	}
 
-  async addFavorite(id: ObjectId, product: FavoriteProduct) {
-    return await this.collection.updateOne(
-      { _id: id },
-      { $push: { favorites: product } }
-    );
-  }
+	async addFavorite(userId: string, product: FavoriteProduct) {
+		const query = `
+      INSERT INTO favorites (user_id, product_id, product_name, product_description, product_price)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+		await this.client.execute(query, [
+			userId,
+			product.productId,
+			product.productName,
+			product.productDescription,
+			product.productPrice,
+		]);
+	}
 
-  async removeFavorite(userId: ObjectId, favoriteId: ObjectId) {
-    return await this.collection.updateOne(
-      { _id: userId },
-      { $pull: { favorites: { productId: ObjectId } } }
-    );
-  }
+	async removeFavorite(userId: string, productId: string) {
+		const query = "DELETE FROM favorites WHERE user_id = ? AND product_id = ?";
+		await this.client.execute(query, [userId, productId]);
+	}
 
-  async addPurchase(userId: ObjectId, purchase: Purchases) {
-    return await this.collection.updateOne(
-      { _id: userId },
-      { $push: { purchases: purchase } }
-    );
-  }
-  async listPurchases(userId: ObjectId){
-    const user = await this.collection.findOne({ _id: userId });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    return user.purchases;
-  }
-  async cancelPurchase(userId: ObjectId, purchaseId: ObjectId) {
-    return await this.collection.updateOne(
-      { _id: userId },
-      { $pull: { purchases: { _id: purchaseId } } }
-    );
-  }
+	async addPurchase(userId: string, purchase: Omit<Purchases, "purchaseId">) {
+		const purchaseId = uuidv4();
+		const query = `
+      INSERT INTO purchases (user_id, purchase_id, product_id, product_name, product_price, quantity, total_price)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+		await this.client.execute(query, [
+			userId,
+			purchaseId,
+			purchase.productId,
+			purchase.productName,
+			purchase.productPrice,
+			purchase.quantity,
+			purchase.totalPrice,
+		]);
+	}
+
+	async listPurchases(userId: string) {
+		const result = await this.client.execute(
+			"SELECT * FROM purchases WHERE user_id = ?",
+			[userId],
+		);
+		return result.rows;
+	}
+
+	async cancelPurchase(userId: string, purchaseId: string) {
+		await this.client.execute(
+			"DELETE FROM purchases WHERE user_id = ? AND purchase_id = ?",
+			[userId, purchaseId],
+		);
+	}
 }
-

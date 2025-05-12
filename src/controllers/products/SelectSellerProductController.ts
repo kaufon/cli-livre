@@ -15,13 +15,13 @@ export class SelectSellerProductController {
   }
   async handle(
     products: Array<{
-      productId: ObjectId;
+      productId: string;
       name: string;
       description: string;
       price: number;
     }>,
   ): Promise<{
-    productId: ObjectId;
+    productId: string;
     name: string;
     description: string;
     price: number;

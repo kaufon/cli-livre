@@ -15,7 +15,7 @@ export class UpdateSellerController {
       this.input,
     ).handle();
     if(!selectedSeller) return
-    const sellerId = selectedSeller._id.toHexString();
+    const sellerId = selectedSeller._id
     let isRunning = true;
     while (isRunning) {
       const choice = await this.input.selectInput("O que deseja atualizar?", [
