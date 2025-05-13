@@ -148,7 +148,7 @@ export class UserModel {
 			[userId, purchaseId],
 		);
 	}
-	async findUserWithRelations(userId: string) {
+	async findUserWithRelations(userId: string): Promise<any> {
 		const userResult = await this.client.execute(
 			"SELECT * FROM MercadoLivre.users WHERE id = ?",
 			[userId],

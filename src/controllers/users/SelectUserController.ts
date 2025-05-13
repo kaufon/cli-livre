@@ -74,8 +74,8 @@ export class SelectUserController {
 			purchases: selectedUser.purchases.map((p: any) => ({
 				productId: p.product_id,
 				productName: p.product_name,
-				// totalPrice: Number(p.total_price),
-				quantity: p.quantity.toNumber()
+				// totalPrice: (p.quantity.toNumber() / 4607182418800017408) * p.product_price,
+				// quantity: p.quantity.toNumber() / 4607182418800017408,
 			})),
 		};
 	}
