@@ -1,4 +1,4 @@
-import { SellerModel } from "../../database/SellerModel";
+import type { SellerModel } from "../../database/SellerModel";
 
 export class ListAllSellersController{
   private sellerModel: SellerModel

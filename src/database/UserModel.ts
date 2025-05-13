@@ -17,7 +17,7 @@ type FavoriteProduct = {
 
 type Purchases = {
 	purchaseId: string;
-	productId: string;
+	productId?: string;
 	productName: string;
 	productPrice: number;
 	quantity: number;
@@ -118,15 +118,14 @@ export class UserModel {
 		await this.client.execute(query, [userId, productId]);
 	}
 
-	async addPurchase(userId: string, purchase: Omit<Purchases, "purchaseId">) {
-		const purchaseId = uuidv4();
+	async addPurchase(userId: string, purchase: Purchases) {
 		const query = `
       INSERT INTO purchases (user_id, purchase_id, product_id, product_name, product_price, quantity, total_price)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 		await this.client.execute(query, [
 			userId,
-			purchaseId,
+			purchase.purchaseId,
 			purchase.productId,
 			purchase.productName,
 			purchase.productPrice,

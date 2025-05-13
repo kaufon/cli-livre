@@ -8,7 +8,7 @@ export const createKeyspace = async () => {
   `;
 	try {
 		await client.execute(createKeyspaceQuery);
-		console.log("✅ Keyspace 'MercadoLivre' created (or already exists)");
+		console.log("✅ Keyspace 'MercadoLivre' criada (ou ja existe XD)");
 	} catch (error) {
 		console.error("❌ Error creating keyspace:", error);
 		throw error; // Let the caller handle the error
@@ -48,7 +48,7 @@ export const createTables = async () => {
       product_id UUID,
       product_name TEXT,
       product_price DECIMAL,
-      quantity INT,
+      quantity BIGINT,
       total_price DECIMAL,
       PRIMARY KEY (user_id, purchase_id)
     );
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS MercadoLivre.products (
       sell_id UUID,
       product_id UUID,
       product_name TEXT,
-      quantity INT,
+      quantity BIGINT,
       price DECIMAL,
       PRIMARY KEY (seller_id, sell_id)
     );

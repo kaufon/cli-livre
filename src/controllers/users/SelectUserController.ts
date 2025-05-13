@@ -74,8 +74,8 @@ export class SelectUserController {
 			purchases: selectedUser.purchases.map((p: any) => ({
 				productId: p.product_id,
 				productName: p.product_name,
-				totalPrice: Number(p.total_price),
-				quantity: p.quantity.toString(),
+				// totalPrice: Number(p.total_price),
+				quantity: p.quantity.toNumber()
 			})),
 		};
 	}

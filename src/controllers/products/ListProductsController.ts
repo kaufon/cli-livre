@@ -15,7 +15,7 @@ export class ListProductsController {
     }>,
   ) {
     const filteredSellers = products.map((product) => ({
-      Preco: product.price,
+      Preco: product.price._intVal,
       Nome: product.name,
       Descricao: product.description,
     }));

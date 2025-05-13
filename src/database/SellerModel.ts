@@ -16,8 +16,8 @@ type Product = {
 };
 
 type Sells = {
-	sellId: string;
-	productId: string;
+	sellId?: string;
+	productId?: string;
 	productName: string;
 	quantity: number;
 	price: number;
@@ -150,15 +150,14 @@ export class SellerModel {
 		await this.client.execute(query, values);
 	}
 
-	async addSell(sellerId: string, sell: Omit<Sells, "sellId">) {
-		const sellId = uuidv4();
+	async addSell(sellerId: string, sell:Sells) {
 		const query = `
       INSERT INTO seller_sells (seller_id, sell_id, product_id, product_name, quantity, price)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 		await this.client.execute(query, [
 			sellerId,
-			sellId,
+			sell.sellId,
 			sell.productId,
 			sell.productName,
 			sell.quantity,

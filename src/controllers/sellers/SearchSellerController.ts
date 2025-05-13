@@ -1,5 +1,5 @@
-import { IInput } from "../../core/interfaces";
-import { SellerModel } from "../../database/SellerModel";
+import type { IInput } from "../../core/interfaces";
+import type { SellerModel } from "../../database/SellerModel";
 import { SelectSellerController } from "./SelectSellerController";
 
 export class SearchSellerController {
@@ -22,10 +22,12 @@ export class SearchSellerController {
 			Rua: selectedSeller.street,
 			CEP: selectedSeller.zipcode,
 			Número: selectedSeller.number,
-			Produtos: selectedSeller.products.map(
-				(product) =>
-					`${product.name} (${product.description}),Preco: R$ ${product.price}`,
-			).join(", "),
+			Produtos: selectedSeller.products
+				.map(
+					(product) =>
+						`${product.name} (${product.description}),Preco: R$ ${product.price}`,
+				)
+				.join(", "),
 		};
 		console.table(filteredSeller);
 		return;

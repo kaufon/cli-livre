@@ -1,5 +1,5 @@
 import type { IInput } from "../../core/interfaces";
-import { SellerModel } from "../../database/SellerModel";
+import type { SellerModel } from "../../database/SellerModel";
 import { SelectSellerController } from "./SelectSellerController";
 
 export class UpdateSellerController {
