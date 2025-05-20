@@ -1,10 +1,8 @@
 import { MercadoLivreSystem } from "./app/Main";
-import { client, connectToDatabase } from "./database/DatabaseConfiguration";
+import { session } from "./database/DatabaseConfiguration";
 
 async function run() {
-  const { db,client } = await connectToDatabase()
-  const app = new MercadoLivreSystem(db);
+  const app = new MercadoLivreSystem(session);
   await app.run();
-  await client.close()
 }
 run();

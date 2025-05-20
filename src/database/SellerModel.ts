@@ -1,6 +1,5 @@
-import { type Collection, ObjectId } from "mongodb";
-import { UpdateUserController } from "../controllers/users";
-import { ProductDocument } from "./ProductModel";
+import { driver } from "./DatabaseConfiguration"; 
+import { randomUUID } from "node:crypto";
 
 type Address = {
   city: string;
@@ -8,135 +7,82 @@ type Address = {
   zipCode: string;
   number: string;
 };
+
 type Product = {
-  productId: ObjectId;
+  id: string;
   name: string;
   description: string;
   price: number;
 };
-type Sells = {
-  _id: ObjectId;
-  productId: ObjectId;
+
+type Sell = {
+  id: string;
+  productId: string;
   productName: string;
   quantity: number;
   price: number;
 };
-type SellerDocument = {
-  _id?: ObjectId;
-  name: string;
-  email: string;
-  password: string;
-  address: Address;
-  products: Product[];
-  sells: Sells[];
-};
-type UpdateSellerParams = {
-  id: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  address?: Address;
-};
+
 export class SellerModel {
-  constructor(private collection: Collection<SellerDocument>) { }
+  public session = driver.session()
   async addSeller(
     name: string,
-    address: Address,
     email: string,
     password: string,
+    address: Address
   ) {
-    const seller: SellerDocument = {
-      name,
-      email,
-      password,
-      address,
-      products: [],
-      sells: [],
-    };
-    return await this.collection.insertOne(seller);
+    const id = randomUUID();
+    await this.session.run(
+      `
+      CREATE (s:Seller {
+        id: $id, name: $name, email: $email, password: $password,
+        city: $city, street: $street, zipCode: $zipCode, number: $number
+      })
+      `,
+      { id, name, email, password, ...address }
+    );
+    return { id, name, email };
   }
+
   async listAllSellers() {
-    return await this.collection.find().toArray();
+    const result = await this.session.run(`MATCH (s:Seller) RETURN s`);
+    return result.records.map((r) => r.get("s").properties);
   }
-  async deleteSeller(id: string) {
-    const objectId = new ObjectId(id);
-    return await this.collection.deleteOne({ _id: objectId });
-  }
-  async updateSeller({
-    id,
-    name,
-    email,
-    password,
-    address,
-  }: UpdateSellerParams) {
-    const objectId = new ObjectId(id);
-    const updateData: Partial<SellerDocument> = {};
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
-    if (password) updateData.password = password;
-    if (address) updateData.address = address;
 
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $set: updateData },
+  async addProduct(product: Product, sellerId: string) {
+    await this.session.run(
+      `
+      MATCH (s:Seller { id: $sellerId })
+      MERGE (p:Produto {
+        id: $id, name: $name, description: $description, price: $price
+      })
+      MERGE (s)-[:VENDE]->(p)
+      `,
+      { sellerId, ...product }
     );
   }
-  async addProduct(
-    { _id, name, price, description }: ProductDocument,
-    sellerId: ObjectId,
-  ) {
-    const objectId = new ObjectId(sellerId);
-    const product: Product = {
-      productId: new ObjectId(_id),
-      name,
-      description,
-      price,
-    };
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $push: { products: product } },
-    );
-  }
-  async removeProduct(productId: ObjectId, sellerId: ObjectId) {
-    const objectId = new ObjectId(sellerId);
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $pull: { products: { productId: new ObjectId(productId) } } },
-    );
-  }
-  async updateSellerProduct(
-    sellerId: ObjectId,
-    productId: ObjectId,
-    updates: Partial<Omit<Product, "productId">>,
-  ) {
-    const updateFields: Record<string, any> = {};
 
-    for (const [key, value] of Object.entries(updates)) {
-      updateFields[`products.$.${key}`] = value;
-    }
+  async addSell(sellerId: string, sell: Sell) {
+    await this.session.run(
+      `
+      MATCH (s:Seller { id: $sellerId })
+      MATCH (p:Produto { id: $productId })
+      MERGE (s)-[r:VENDEU]->(p)
+      SET r.quantity = $quantity, r.price = $price
+      `,
+      { sellerId, ...sell }
+    );
+  }
 
-    return await this.collection.updateOne(
-      { _id: sellerId, "products.productId": productId },
-      { $set: updateFields },
+  async findSellerIdByProductId(productId: string): Promise<string | null> {
+    const result = await this.session.run(
+      `
+      MATCH (s:Seller)-[:VENDE]->(p:Produto { id: $productId })
+      RETURN s.id AS sellerId
+      `,
+      { productId }
     );
-  }
-  async addSell(sellerId: ObjectId, sell: Sells) {
-    return await this.collection.updateOne(
-      { _id: sellerId },
-      { $push: { sells: sell } },
-    );
-  }
-  async removeSell(sellerId: ObjectId, sellId: ObjectId) {
-    return await this.collection.updateOne(
-      { _id: sellerId },
-      { $pull: { sells: { _id: sellId } } },
-    );
-  }
-  async findSellerIdByProductId(productId: ObjectId): Promise<ObjectId | null> {
-    const seller = await this.collection.findOne(
-      { "products.productId": productId },
-      { projection: { _id: 1 } },
-    );
-    return seller?._id ?? null
+    const record = result.records[0];
+    return record ? record.get("sellerId") : null;
   }
 }

@@ -21,8 +21,8 @@ export class ProductsCommands {
   public async run(): Promise<void> {
     const options = await this.input.selectInput("Pls escolha", [
       ["Cadastrar Produto", "add"],
-      ["Atualizar Produto", "update"],
-      ["Deletar Produto", "delete"],
+      // ["Atualizar Produto", "update"],
+      // ["Deletar Produto", "delete"],
       ["Buscar Produto", "search"],
       ["Voltar", "exit"],
     ]);
@@ -36,23 +36,23 @@ export class ProductsCommands {
         await controller.handle();
         return;
       }
-      case "search": {
-        const controller = await new SearchProductController(
-          this.productModel,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
-      case "delete": {
-        const controller = await new DeleteProductController(
-          this.input,
-          this.productModel,
-          this.sellerModel,
-        );
-        await controller.handle();
-        return;
-      }
+      // case "search": {
+      //   const controller = await new SearchProductController(
+      //     this.productModel,
+      //     this.input,
+      //   );
+      //   await controller.handle();
+      //   return;
+      // }
+      // case "delete": {
+      //   const controller = await new DeleteProductController(
+      //     this.input,
+      //     this.productModel,
+      //     this.sellerModel,
+      //   );
+      //   await controller.handle();
+      //   return;
+      // }
       case "update": {
         const controller = await new UpdateProductController(
           this.input,

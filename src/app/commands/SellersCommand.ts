@@ -19,8 +19,6 @@ export class SellersCommands {
   public async run(): Promise<void> {
     const options = await this.input.selectInput("Pls escolha", [
       ["Cadastrar Vendedor", "add"],
-      ["Atualizar Vendedor", "update"],
-      ["Deletar Vendedor", "delete"],
       ["Buscar Vendedor", "search"],
       ["Voltar", "exit"],
     ]);
@@ -41,22 +39,22 @@ export class SellersCommands {
         await controller.handle();
         return;
       }
-      case "update": {
-        const controller = await new UpdateSellerController(
-          this.model,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
-      case "delete": {
-        const controller = await new DeleteSellerController(
-          this.model,
-          this.input,
-        );
-        await controller.handle();
-        return;
-      }
+      // case "update": {
+      //   const controller = await new UpdateSellerController(
+      //     this.model,
+      //     this.input,
+      //   );
+      //   await controller.handle();
+      //   return;
+      // }
+      // case "delete": {
+      //   const controller = await new DeleteSellerController(
+      //     this.model,
+      //     this.input,
+      //   );
+      //   await controller.handle();
+      //   return;
+      // }
       case "exit": {
         return;
       }

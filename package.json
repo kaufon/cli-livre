@@ -3,6 +3,7 @@
     "dotenv": "^16.4.7",
     "inquirer": "^12.5.2",
     "mongodb": "^6.15.0",
+    "neo4j-driver": "^5.28.1",
     "tsx": "^4.19.3"
   },
   "scripts": {

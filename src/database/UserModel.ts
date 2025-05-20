@@ -1,4 +1,5 @@
-import { ObjectId, type Collection } from "mongodb";
+import { driver} from './DatabaseConfiguration'; 
+import { randomUUID } from 'node:crypto';
 
 type Address = {
   city: string;
@@ -8,115 +9,83 @@ type Address = {
 };
 
 type FavoriteProduct = {
-  productId: ObjectId;
-  productName: string;
-  productDescription: string;
-  productPrice: number;
-};
-
-type Purchases = {
-  _id: ObjectId
-  productId: ObjectId;
-  productName: string;
-  productPrice: number;
-  quantity: number;
-  totalPrice: number
-};
-
-type UserDocument = {
-  _id?: ObjectId;
-  name: string;
-  email: string;
-  password: string;
-  address: Address;
-  favorites: FavoriteProduct[];
-  purchases: Purchases[];
-};
-
-type UpdateUserParams = {
   id: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  address?: Address;
+  name: string;
+  description: string;
+  price: number;
+};
+
+type Purchase = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  totalPrice: number;
 };
 
 export class UserModel {
-  constructor(private collection: Collection<UserDocument>) {}
-
+  public session = driver.session()
   async addUser(
     name: string,
     email: string,
     password: string,
     address: Address
   ) {
-    const user: UserDocument = {
-      name,
-      email,
-      password,
-      address,
-      favorites: [],
-      purchases: [],
-    };
-    return await this.collection.insertOne(user);
+    const id = randomUUID();
+    await this.session.run(
+      `
+      CREATE (u:User {
+        id: $id, name: $name, email: $email, password: $password,
+        city: $city, street: $street, zipCode: $zipCode, number: $number
+      })
+      `,
+      { id, name, email, password, ...address }
+    );
+    return { id, name, email };
   }
 
   async listAllUsers() {
-    return await this.collection.find().toArray();
+    const result = await this.session.run(`MATCH (u:User) RETURN u`);
+    return result.records.map(r => r.get('u').properties);
   }
 
-  async deleteUser(id: string) {
-    const objectId = new ObjectId(id);
-    return await this.collection.deleteOne({ _id: objectId });
-  }
-
-  async updateUser({ id, name, email, password, address }: UpdateUserParams) {
-    const objectId = new ObjectId(id);
-    const updateFields: Partial<UserDocument> = {};
-
-    if (name !== undefined) updateFields.name = name;
-    if (email !== undefined) updateFields.email = email;
-    if (password !== undefined) updateFields.password = password;
-    if (address !== undefined) updateFields.address = address;
-
-    return await this.collection.updateOne(
-      { _id: objectId },
-      { $set: updateFields }
+  async addFavorite(userId: string, product: FavoriteProduct) {
+    await this.session.run(
+      `
+      MATCH (u:User {id: $userId})
+      MERGE (p:Produto {
+        id: $id, name: $name, description: $description, price: $price
+      })
+      MERGE (u)-[:FAVORITOU]->(p)
+      `,
+      { userId, ...product }
     );
   }
 
-  async addFavorite(id: ObjectId, product: FavoriteProduct) {
-    return await this.collection.updateOne(
-      { _id: id },
-      { $push: { favorites: product } }
+  async addPurchase(userId: string, purchase: Purchase) {
+    await this.session.run(
+      `
+      MATCH (u:User {id: $userId})
+      MERGE (p:Produto { id: $id, name: $name, price: $price })
+      MERGE (u)-[r:COMPROU]->(p)
+      SET r.quantity = $quantity, r.totalPrice = $totalPrice
+      `,
+      { userId, ...purchase }
     );
   }
 
-  async removeFavorite(userId: ObjectId, favoriteId: ObjectId) {
-    return await this.collection.updateOne(
-      { _id: userId },
-      { $pull: { favorites: { productId: ObjectId } } }
+  async listPurchases(userId: string) {
+    const result = await this.session.run(
+      `
+      MATCH (u:User {id: $userId})-[r:COMPROU]->(p:Produto)
+      RETURN p, r
+      `,
+      { userId }
     );
-  }
 
-  async addPurchase(userId: ObjectId, purchase: Purchases) {
-    return await this.collection.updateOne(
-      { _id: userId },
-      { $push: { purchases: purchase } }
-    );
-  }
-  async listPurchases(userId: ObjectId){
-    const user = await this.collection.findOne({ _id: userId });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    return user.purchases;
-  }
-  async cancelPurchase(userId: ObjectId, purchaseId: ObjectId) {
-    return await this.collection.updateOne(
-      { _id: userId },
-      { $pull: { purchases: { _id: purchaseId } } }
-    );
+    return result.records.map(record => ({
+      product: record.get('p').properties,
+      purchaseDetails: record.get('r').properties,
+    }));
   }
 }
-
