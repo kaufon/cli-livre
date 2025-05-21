@@ -9,9 +9,9 @@ export class ListAllProductsController {
   async handle() {
     const products = await this.productModel.listAll();
     const filteredSellers = products.map((product) => ({
-      ID: product._id?.toHexString(),
-      Preco: product.price,
-      Nome: product.name,
+      Preco: product.product.price,
+      Nome: product.product.name,
+      Descricao: product.product.description
     }));
     console.table(filteredSellers);
     return;

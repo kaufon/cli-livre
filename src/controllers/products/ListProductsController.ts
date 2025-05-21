@@ -15,7 +15,6 @@ export class ListProductsController {
     }>,
   ) {
     const filteredSellers = products.map((product) => ({
-      ID: product.productId?.toHexString(),
       Preco: product.price,
       Nome: product.name,
       Descricao: product.description,

@@ -1,16 +1,12 @@
 import { driver } from "./DatabaseConfiguration";
 
-type Address = {
-	city: string;
-	street: string;
-	zipCode: string;
-	number: string;
-};
-
 type Seller = {
 	_id: string;
 	name: string;
-	address: Address;
+	city: string;
+	zipCode: string;
+	street: string;
+	number: string;
 };
 
 export type ProductDocument = {
@@ -26,27 +22,28 @@ export class ProductModel {
 
 	async addProduct(product: ProductDocument): Promise<void> {
 		const { name, price, seller } = product;
-		const { address } = seller;
 		await this.session.run(
 			`
-      MERGE (v:Vendedor {
+      MERGE (v:Seller {
       name: $sellerName,
       city: $city,
       street: $street,
-      zipCode: $zipCode
+      zipCode: $zipCode,
       number: $number
-})
-    CREATE (p:Produto {name: $productName,price: $price})
+      })
+    CREATE (p:Product {id: $productId,name: $productName,price: $price, description: $description})
     MERGE (v)-[:VENDE]->(p)
 `,
 			{
+        productId: product.id,
 				sellerName: seller.name,
 				productName: name,
+				description: product.description,
 				price,
-				city: address.city,
-				street: address.street,
-				zipCode: address.zipCode,
-				number: address.number,
+				city: seller.city,
+				street: seller.street,
+				zipCode: seller.zipCode,
+				number: seller.number,
 			},
 		);
 	}
@@ -91,7 +88,7 @@ export class ProductModel {
 	async listAll(): Promise<any[]> {
 		const result = await this.session.run(
 			`
-MATCH (p:Produto)<-[:VENDE]-(v:Vendedor)
+MATCH (p:Product)<-[:VENDE]-(v:Seller)
 RETURN p,v
 `,
 		);

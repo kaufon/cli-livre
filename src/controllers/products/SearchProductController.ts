@@ -13,13 +13,12 @@ export class SearchProductController {
     const product = await new SelectProductController(this.productModel, this.input).handle();
     if(!product) return
     const filterdProduct = {
-      ID: product._id?.toHexString(),
-      Preco: product.price,
-      Nome: product.name,
-      Descricao: product.description,
+      Preco: product.product.price,
+      Nome: product.product.name,
+      Descricao: product.product.description,
       Vendedor: product.seller.name,
-      Cidade: product.seller.address.city,
-      CEP: product.seller.address.zipCode,
+      Cidade: product.seller.city,
+      CEP: product.seller.zipCode,
     };
     console.table(filterdProduct);
   }

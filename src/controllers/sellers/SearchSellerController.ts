@@ -18,14 +18,14 @@ export class SearchSellerController {
 		const filteredSeller = {
 			Nome: selectedSeller.name,
 			Email: selectedSeller.email,
-			Cidade: selectedSeller.address.city,
-			Rua: selectedSeller.address.street,
-			CEP: selectedSeller.address.zipCode,
-			Número: selectedSeller.address.number,
-			Produtos: selectedSeller.products.map(
-				(product) =>
-					`${product.name} (${product.description}),Preco: R$ ${product.price}`,
-			).join(", "),
+			Cidade: selectedSeller.city,
+			Rua: selectedSeller.street,
+			CEP: selectedSeller.zipCode,
+			Número: selectedSeller.number,
+			// Produtos: selectedSeller.products.map(
+			// 	(product) =>
+			// 		`${product.name} (${product.description}),Preco: R$ ${product.price}`,
+			// ).join(", "),
 		};
 		console.table(filteredSeller);
 		return;

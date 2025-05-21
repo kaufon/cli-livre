@@ -1,11 +1,8 @@
-import { Db } from "mongodb";
 import type { IInput } from "../../core/interfaces";
 import { SellerModel } from "../../database/SellerModel";
 import {
   CreateSellerController,
-  DeleteSellerController,
   SearchSellerController,
-  UpdateSellerController,
 } from "../../controllers/sellers";
 export class SellersCommands {
   private input: IInput;
@@ -14,7 +11,7 @@ export class SellersCommands {
   constructor(input: IInput, db: Db) {
     this.input = input;
     this.database = db;
-    this.model = new SellerModel(db.collection("sellers"));
+    this.model = new SellerModel();
   }
   public async run(): Promise<void> {
     const options = await this.input.selectInput("Pls escolha", [
@@ -24,7 +21,7 @@ export class SellersCommands {
     ]);
     switch (options) {
       case "add": {
-        const controller = await new CreateSellerController(
+        const controller =  new CreateSellerController(
           this.model,
           this.input,
         );
@@ -32,7 +29,7 @@ export class SellersCommands {
         return;
       }
       case "search": {
-        const controller = await new SearchSellerController(
+        const controller = new SearchSellerController(
           this.model,
           this.input,
         );
