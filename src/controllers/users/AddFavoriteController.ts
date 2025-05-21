@@ -26,11 +26,11 @@ export class AddFavoriteController {
     ).handle();
     if (!selectedProduct) return;
     const favoriteProduct = {
-      productId: selectedProduct._id as ObjectId,
-      productName: selectedProduct.name,
-      productDescription: selectedProduct.description,
-      productPrice: selectedProduct.price,
+      productId: selectedProduct.product.id,
+      productName: selectedProduct.product.name,
+      productDescription: selectedProduct.product.description,
+      productPrice: selectedProduct.product.price,
     };
-    await this.userModel.addFavorite(selectedUser._id, favoriteProduct);
+    await this.userModel.addFavorite(selectedUser.id, favoriteProduct);
   }
 }

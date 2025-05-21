@@ -39,24 +39,20 @@ export class AddPurchaseController {
     const sellId = new ObjectId();
     const purchase = {
       _id: sellId,
-      productId: selectedProduct._id as ObjectId,
-      productName: selectedProduct.name,
-      productPrice: selectedProduct.price,
+      productId: selectedProduct.product.id,
+      productName: selectedProduct.product.name,
+      productPrice: selectedProduct.product.price,
       quantity: quantity,
-      totalPrice: selectedProduct.price * quantity,
+      totalPrice: selectedProduct.product.price * quantity,
     };
     const sell = {
       _id: sellId,
-      productId: selectedProduct._id as ObjectId,
-      productName: selectedProduct.name,
+      productId: selectedProduct.product.id,
+      productName: selectedProduct.product.name,
       quantity: quantity,
-      price: selectedProduct.price * quantity,
+      price: selectedProduct.product.price * quantity,
     };
-    await this.userModel.addPurchase(selectedUser._id, purchase);
-    await this.sellerModel.addSell(
-      selectedProduct.seller._id as ObjectId,
-      sell,
-    );
+    await this.userModel.addPurchase(selectedUser.id, purchase);
     console.log("compra feita com sucesso");
   }
 }

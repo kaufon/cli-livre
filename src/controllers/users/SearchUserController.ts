@@ -15,17 +15,18 @@ export class SearchUserController {
 			this.input,
 		).handle();
 		if (!selectedUser) return;
+    const user = await this.userModel.getUserAndFavoritesAndPurchasesByUserId(selectedUser.id)
 		const filteredUser = {
-			Nome: selectedUser.name,
-			Email: selectedUser.email,
-			Cidade: selectedUser.address.city,
-			Rua: selectedUser.address.street,
-			CEP: selectedUser.address.zipCode,
-			Número: selectedUser.address.number,
-			Favoritos: selectedUser.favorites
-				.map((fav) => `${fav.productName} (${fav.productDescription})`)
+			Nome: user.user.name,
+			Email: user.user.email,
+			Cidade: user.user.city,
+			Rua: user.user.street,
+			CEP: user.user.zipCode,
+			Número: user.user.number,
+			Favoritos: user.favorites
+				.map((fav) => `${fav.name} (${fav.description}) ${fav.price}`)
 				.join(", "),
-			Compras: selectedUser.purchases
+			Compras: user.purchases
 				.map(
 					(pur) =>
 						`${pur.productName} (Qtd: ${pur.quantity}, Preço: R$${pur.totalPrice})`,
